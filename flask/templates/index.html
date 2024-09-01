@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATM Generator and Plotter</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        var currentTab = '#tab1'; // Default to the first tab
+
+        function autoRefreshImage(formId, imgId, url) {
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: $(formId).serialize(),
+                success: function(response) {
+                    var imgBlob = new Blob([response], { type: 'image/png' });
+                    var imgUrl = URL.createObjectURL(imgBlob);
+                    $(imgId).attr('src', imgUrl);
+                },
+                error: function() {
+                    console.error('Failed to load image');
+                },
+                xhrFields: {
+                    responseType: 'blob'
+                }
+            });
+        }
+
+        function onTabChange(event) {
+            var selectedTab = '#' + event.target.value;
+            $('.tab-content').hide(); // Hide all tabs
+            $(selectedTab).show(); // Show the selected tab
+            currentTab = selectedTab; // Update current tab
+        }
+
+        function setUpAutoRefresh() {
+            setInterval(function() {
+                if ($(currentTab).is(':visible')) {
+                    var formId = currentTab === '#tab1' ? '#dataForm1' : '#dataForm2';
+                    var imgId = currentTab === '#tab1' ? '#graph-img-tab1' : '#graph-img-tab2';
+                    var url = currentTab === '#tab1' ? '/' : '/cal';
+                    autoRefreshImage(formId, imgId, url);
+                }
+            }, 10000); // Refresh every 10 seconds
+        }
+
+        $(document).ready(function() {
+            // Prevent default form submissions and handle auto-refresh
+            $('#dataForm1').on('submit', function(event) {
+                event.preventDefault();
+                autoRefreshImage('#dataForm1', '#graph-img-tab1', '/');
+            });
+
+            $('#dataForm2').on('submit', function(event) {
+                event.preventDefault();
+                autoRefreshImage('#dataForm2', '#graph-img-tab2', '/cal');
+            });
+
+            // Trigger initial image loads
+            autoRefreshImage('#dataForm1', '#graph-img-tab1', '/');
+            autoRefreshImage('#dataForm2', '#graph-img-tab2', '/cal');
+
+            // Initialize tabs
+            $('.tab-content').hide(); // Hide all tabs by default
+            $('#tab1').show(); // Show the first tab
+
+            // Set up auto-refresh
+            setUpAutoRefresh();
+        });
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .tabs {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .tabs select {
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            background: #fafafa;
+        }
+        .tab-content {
+            padding: 20px;
+            border-radius: 8px;
+            background: #f9f9f9;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+        form fieldset {
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+        form legend {
+            font-size: 18px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+            color: #555;
+        }
+        form label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        form input[type="text"],
+        form input[type="date"],
+        form input[type="number"],
+        form input[type="submit"] {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        form input[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+        form input[type="submit"]:hover {
+            background-color: #218838;
+        }
+        .graph-img {
+            display: block;
+            margin: 20px auto;
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: #fff;
+        }
+        .flash-messages {
+            color: red;
+            font-size: 14px;
+            padding: 10px;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .flash-messages ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .flash-messages li {
+            margin-bottom: 5px;
+        }
+        .graph-img {
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            max-width: 100%;
+            height: auto;
+            overflow-x: auto; /* Ensure horizontal scrolling if needed */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ATM Multiple Strike and price difference</h1>
+        <div class="tabs">
+            <select onchange="onTabChange(event)">
+                <option value="tab1">Straddle</option>
+                <option value="tab2">DoubleCalendar and IronButterfly</option>
+            </select>
+        </div>
+
+        <div id="tab1" class="tab-content">
+            <form id="dataForm1" method="POST">
+                <fieldset>
+                    <legend>Straddle Price</legend>
+                    <label for="symbol_nf">Symbol 1:</label>
+                    <input type="text" id="symbol_nf" name="symbol_nf" placeholder="NIFTY-05SEP24">
+                    
+                    <label for="symbol_sx">Symbol 2:</label>
+                    <input type="text" id="symbol_sx" name="symbol_sx" placeholder="SENSEX-06SEP24">
+                    
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" required>
+                    
+                    <label for="end_date">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" required>
+                    
+                    <label for="resample_freq">Resample Frequency:</label>
+                    <input type="text" id="resample_freq" name="resample_freq" value="15T" placeholder="15T">
+                    
+                    <input type="submit" value="Update">
+                </fieldset>
+            </form>
+            <img id="graph-img-tab1" class="graph-img" alt="Graph for Tab 1">
+        </div>
+
+        <div id="tab2" class="tab-content">
+            <form id="dataForm2" method="POST">
+                <fieldset>
+                    <!-- <legend>DoubleCalendar and IronButterfly and price difference</legend> -->
+                    
+                    <!-- First Set of Fields: DoubleCalendar -->
+                    <fieldset>
+                        <legend>DoubleCalendar</legend>
+                        
+                        <label for="symbols1">Symbols:</label>
+                        <input type="text" id="symbols1" name="symbols1" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
+                        
+                        <label for="q1_1">Q1:</label>
+                        <input type="number" id="q1_1" name="q1_1" value="2" required>
+                        
+                        <label for="q2_1">Q2:</label>
+                        <input type="number" id="q2_1" name="q2_1" value="2" required>
+                        
+                        <label for="q3_1">Q3:</label>
+                        <input type="number" id="q3_1" name="q3_1" value="2" required>
+                        
+                        <label for="q4_1">Q4:</label>
+                        <input type="number" id="q4_1" name="q4_1" value="2" required>
+                        
+                        <label for="start_date1">Start Date:</label>
+                        <input type="date" id="start_date1" name="start_date1" required>
+                        
+                        <label for="end_date1">End Date:</label>
+                        <input type="date" id="end_date1" name="end_date1" required>
+                        
+                        <label for="resample_freq1">Resample Frequency:</label>
+                        <input type="text" id="resample_freq1" name="resample_freq1" value="15T">
+                    </fieldset>
+        
+                    <!-- Second Set of Fields: IronButterfly -->
+                    <fieldset>
+                        <legend>IronButterfly</legend>
+                        
+                        <label for="symbols2">Symbols:</label>
+                        <input type="text" id="symbols2" name="symbols2" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
+                        
+                        <label for="q1_2">Q1:</label>
+                        <input type="number" id="q1_2" name="q1_2" value="1" required>
+                        
+                        <label for="q2_2">Q2:</label>
+                        <input type="number" id="q2_2" name="q2_2" value="1" required>
+                        
+                        <label for="q3_2">Q3:</label>
+                        <input type="number" id="q3_2" name="q3_2" value="1" required>
+                        
+                        <label for="q4_2">Q4:</label>
+                        <input type="number" id="q4_2" name="q4_2" value="1" required>
+                        
+                        <label for="start_date2">Start Date:</label>
+                        <input type="date" id="start_date2" name="start_date2" required>
+                        
+                        <label for="end_date2">End Date:</label>
+                        <input type="date" id="end_date2" name="end_date2" required>
+                        
+                        <label for="resample_freq2">Resample Frequency:</label>
+                        <input type="text" id="resample_freq2" name="resample_freq2" value="15T">
+                    </fieldset>
+        
+                    <input type="submit" value="Update">
+                </fieldset>
+            </form>
+            <img id="graph-img-tab2" class="graph-img" alt="Graph for Tab 2">
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    <ul>
+                        {% for category, message in messages %}
+                            <li class="{{ category }}">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+</body>
+</html>
