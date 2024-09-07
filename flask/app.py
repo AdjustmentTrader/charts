@@ -1,12 +1,14 @@
 from flask import Flask, render_template, request, Response
-from apscheduler.schedulers.background import BackgroundScheduler
 import requests
 import matplotlib
+from datetime import datetime, time as dt_time
 import time
 matplotlib.use('Agg')  # Use 'Agg' backend for non-interactive plotting
 import matplotlib.pyplot as plt
 import pandas as pd
 from io import BytesIO
+import datetime
+import yfinance as yf
 
 app = Flask(__name__)
 
@@ -20,6 +22,9 @@ cookies = {
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
 }
+
+user = 'saravanan46'
+sid = 'du7u85s8imhpka97hdvn789onh'
 
 def fetch_data(url):
     try:
@@ -48,7 +53,8 @@ def parse_data(data):
             except ValueError as e:
                 print(f"Data parsing error: {e}")
 
-    return pd.DataFrame({'DateTime': dates, 'Value': values})
+    rowss = pd.DataFrame({'DateTime': dates, 'Value': values})
+    return rowss
 
 def parse_data_cal(data):
     rows = data.splitlines()
@@ -126,7 +132,7 @@ def plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date):
         # Combine legends from both y-axes
         lines1, labels1 = ax1.get_legend_handles_labels()
         lines2, labels2 = ax2.get_legend_handles_labels()
-        ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper right', fontsize='small', frameon=True)
+        ax1.legend(lines1 + lines2, labels1 + labels2, loc=(0.5, 0.5), fontsize='small', frameon=True)
 
         plt.tight_layout()
     else:
@@ -146,7 +152,7 @@ def plot_data_cal_if(df_merged, symbol_nf, symbol_sx, start_date, end_date):
         # Plot NIFTY data on the primary y-axis
         ax1.plot(df_merged['DateTime'], df_merged['Value_CAL'], label=f'{symbol_nf}', color='blue', linewidth=2, marker='o')
         ax1.plot(df_merged['DateTime'], df_merged['Value_IF'], label=f'{symbol_sx}', color='red', linewidth=2, marker='o')
-        ax1.plot(df_merged['DateTime'], df_merged['Difference'], label='Difference', color='green', linewidth=2, linestyle='--')
+        ax1.plot(df_merged['DateTime'], df_merged['Difference'], label='Profit and Loss', color='green', linewidth=2, linestyle='--')
 
         # Annotate each point with its value
         for i, row in df_merged.iterrows():
@@ -196,31 +202,40 @@ def index():
         start_date = request.form.get('start_date')
         end_date = request.form.get('end_date')
         resample_freq = request.form.get('resample_freq', '15T')  # Default to '15T' if not provided
-        nifty_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u=saravanan46&sid=du7u85s8imhpka97hdvn789onh"
-        sensex_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u=saravanan46&sid=du7u85s8imhpka97hdvn789onh"
-        
+
+        # Check if start_date is today
+        today = datetime.now().date()
+        is_today = datetime.strptime(start_date, '%Y-%m-%d').date() == today
+
+        # Check current time
+        current_time = datetime.now().time()
+        is_in_time_range = dt_time(13, 45) <= current_time <= dt_time(23, 55)
+
+        # Construct URLs with conditional latestData parameter
+        if is_today and is_in_time_range:
+            nifty_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
+            sensex_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
+        else:
+            nifty_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}"
+            sensex_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}"
+        print(nifty_url)
         data_nf = fetch_data(nifty_url)
         data_sx = fetch_data(sensex_url)
         data_future = fetch_data(get_symbol_url(symbol_nf))
-        print(get_symbol_url(symbol_nf))
-
         if data_nf and data_sx and data_future:
             df_nf = parse_data(data_nf)
             df_sx = parse_data(data_sx)
             df_future = parse_data(data_future)
-            
             df_nf_downsampled = downsample_data(df_nf, resample_freq)
             df_sx_downsampled = downsample_data(df_sx, resample_freq)
             df_future_downsampled = downsample_data(df_future, resample_freq)
-            
             # Merge the data on 'DateTime' column
             df_merged = pd.merge(df_nf_downsampled, df_sx_downsampled, on='DateTime', suffixes=('_NF', '_SX'))
             df_merged = pd.merge(df_merged, df_future_downsampled, on='DateTime')
             df_merged.rename(columns={'Value': 'Value_FUTURE'}, inplace=True)
-            
             df_merged = df_merged[(df_merged['DateTime'] >= start_date) & (df_merged['DateTime'] <= end_date)]
             df_merged['Difference'] = df_merged['Value_NF'] - df_merged['Value_SX']
-
+            
             img = plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date)
             
             return Response(img, mimetype='image/png')
@@ -278,11 +293,56 @@ def index_cal():
             df_future_downsampled = downsample_data(df_future, resample_freq2)
             df_merged = pd.merge(df_cal_downsampled, df_if_downsampled, on='DateTime', suffixes=('_CAL', '_IF'))
             df_merged = df_merged[(df_merged['DateTime'] >= start_date1) & (df_merged['DateTime'] <= end_date1)]
-            df_merged['Difference'] = df_merged['Value_CAL'] - df_merged['Value_IF']
+            df_merged['Difference'] = df_merged['Value_CAL'] + df_merged['Value_IF']
             df_merged = pd.merge(df_merged, df_future_downsampled, on='DateTime')
             df_merged.rename(columns={'Value': 'Value_FUTURE'}, inplace=True)
             img = plot_data_cal_if(df_merged, symbols1, symbols2, start_date1, end_date1)
 
+    return Response(img, mimetype='image/png')
+
+@app.route('/trend', methods=['GET', 'POST'])
+def trend():
+    # Define the symbols for DOW Futures, NASDAQ Futures, VIX, NSEBANK, and NSEI
+    symbols = {
+            'DOW Futures': 'YM=F',       # DOW Jones Index
+            'NASDAQ Futures': 'NQ=F',   # NASDAQ Composite Index
+            'VIX': '^VIX',               # VIX Index
+            'NSEBANK': '^NSEBANK',       # Nifty Bank Index
+            'NSEI': '^NSEI'              # Nifty 50 Index
+    }
+
+    # Fetch data with 1-minute intervals
+    data = {}
+    for name, symbol in symbols.items():
+        df = yf.download(tickers=symbol,period='1d',interval='1m')
+        # Normalize the 'Close' column to plot only the patterns
+        df['Normalized Close'] = (df['Close'] - df['Close'].min()) / (df['Close'].max() - df['Close'].min())
+        data[name] = df
+
+    colors = {
+            'DOW Futures': '#008080',      # Bright Orange
+            'NASDAQ Futures': '#FF7F50',   # Bright Green
+            'VIX': '#800000',              # Bright Blue
+            'NSEBANK': '#0000CD',          # Bright Pink
+            'NSEI': '#000000',             # Bright Yellow
+    }
+
+    # Create a plot
+    plt.figure(figsize=(14, 7))
+
+    for name, df in data.items():
+        plt.plot(df.index, df['Normalized Close'], label=name, color=colors.get(name, '#000000'))
+
+    plt.title('Live Data for DOW Futures, NASDAQ Futures, VIX US, BANKNIFTY, and NIFTY (Normalized Patterns)')
+    plt.xlabel('Date')
+    plt.ylabel('Normalized Price')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+    img = BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plt.close()
     return Response(img, mimetype='image/png')
 
 from datetime import datetime, timedelta
@@ -327,15 +387,7 @@ def get_symbol_url(symbol):
     elif 'NIFTY' in symbol:
         symbol_val = 'NIFTY'
     symbol_date = last_weekday_date.strftime('%d%b%y').upper()
-    return f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForPremium_m_cmpt_curr_tj.php?mode=INTRA&symbol={symbol_val}-{symbol_date}&timeframe=5min&u=saravanan46&sid=du7u85s8imhpka97hdvn789onh"
+    return f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForPremium_m_cmpt_curr_tj.php?mode=INTRA&symbol={symbol_val}-{symbol_date}&timeframe=5min&u={user}&sid={sid}"
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
-##https://www.icharts.in/opt/hcharts/stx8req/php/getdataForPremium_m_cmpt_curr_tj.php?mode=INTRA&symbol=NIFTY-26SEP24&timeframe=5min&u=saravanan46&sid=du7u85s8imhpka97hdvn789onh
-##https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol=NIFTY-05SEP24&timeframe=1min&rdDataType=latest&u=saravanan46&sid=du7u85s8imhpka97hdvn789onh"
-##https://www.icharts.in/opt/hcharts/stx8req/php/getdataForIronButterly_m_curr_atp.php?mode=INTRA&symbol=NIFTY-25300C-12SEP24:NIFTY-25300C-12SEP24:NIFTY-25350P-12SEP24:NIFTY-25300P-12SEP24&timeframe=5min&u=saravanan46&sid=du7u85s8imhpka97hdvn789onh&q1=1&q2=1&q3=1&q4=1
-##https://www.icharts.in/opt/hcharts/stx8req/php/getdataForDoubleCalendar_beta.php?mode=INTRA&symbol=NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24&timeframe=5min&u=saravanan46&sid=du7u85s8imhpka97hdvn789onh&q1=2&q2=2&q3=3&q4=3
-##https://www.icharts.in/opt/hcharts/stx8req/php/getdataForDoubleCalendar_beta.php?mode=INTRA&symbol=NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24&timeframe=5min&u=saravanan46&lts=1724995800000&sid=du7u85s8imhpka97hdvn789onh&q1=2&q2=2&q3=3&q4=3
