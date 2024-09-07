@@ -34,16 +34,27 @@
             currentTab = selectedTab; // Update current tab
         }
 
-        function setUpAutoRefresh() {
-            setInterval(function() {
-                if ($(currentTab).is(':visible')) {
-                    var formId = currentTab === '#tab1' ? '#dataForm1' : '#dataForm2';
-                    var imgId = currentTab === '#tab1' ? '#graph-img-tab1' : '#graph-img-tab2';
-                    var url = currentTab === '#tab1' ? '/' : '/cal';
-                    autoRefreshImage(formId, imgId, url);
+        setInterval(function() {
+            if ($(currentTab).is(':visible')) {
+                var formId, imgId, url;
+
+                if (currentTab === '#tab1') {
+                    formId = '#dataForm1';
+                    imgId = '#graph-img-tab1';
+                    url = '/';
+                } else if (currentTab === '#tab2') {
+                    formId = '#dataForm2';
+                    imgId = '#graph-img-tab2';
+                    url = '/cal';
+                } else if (currentTab === '#tab3') {
+                    formId = '#dataForm3';
+                    imgId = '#graph-img-tab3';
+                    url = '/trend'; 
                 }
-            }, 10000); // Refresh every 10 seconds
-        }
+                autoRefreshImage(formId, imgId, url);
+            }
+        }, 10000); // Refresh every 10 seconds
+
 
         $(document).ready(function() {
             // Prevent default form submissions and handle auto-refresh
@@ -57,9 +68,15 @@
                 autoRefreshImage('#dataForm2', '#graph-img-tab2', '/cal');
             });
 
+            $('#dataForm3').on('submit', function(event) {
+                event.preventDefault();
+                autoRefreshImage('#dataForm3', '#graph-img-tab3', '/cal');
+            });
+
             // Trigger initial image loads
             autoRefreshImage('#dataForm1', '#graph-img-tab1', '/');
             autoRefreshImage('#dataForm2', '#graph-img-tab2', '/cal');
+            autoRefreshImage('#dataForm3', '#graph-img-tab3', '/cal');
 
             // Initialize tabs
             $('.tab-content').hide(); // Hide all tabs by default
@@ -191,6 +208,7 @@
             <select onchange="onTabChange(event)">
                 <option value="tab1">Straddle</option>
                 <option value="tab2">DoubleCalendar and IronButterfly</option>
+                <option value="tab3">Market Trend</option>
             </select>
         </div>
 
@@ -228,7 +246,7 @@
                     <fieldset>
                         <legend>DoubleCalendar</legend>
                         
-                        <label for="symbols1">Symbols:</label>
+                        <label for="symbols1">Symbols: CE BUY WEEKLY - PE BUY WEEKLY - CE SELL NEXT - PE SELL NEXT</label>
                         <input type="text" id="symbols1" name="symbols1" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
                         
                         <label for="q1_1">Q1:</label>
@@ -257,7 +275,7 @@
                     <fieldset>
                         <legend>IronButterfly</legend>
                         
-                        <label for="symbols2">Symbols:</label>
+                        <label for="symbols2">Symbols: CE BUY - CE SELL - PE SELL - PE BUY</label>
                         <input type="text" id="symbols2" name="symbols2" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
                         
                         <label for="q1_2">Q1:</label>
@@ -286,6 +304,16 @@
                 </fieldset>
             </form>
             <img id="graph-img-tab2" class="graph-img" alt="Graph for Tab 2">
+        </div>
+
+        <div id="tab3" class="tab-content">
+            <form id="dataForm3" method="POST">
+                <fieldset>
+                    <legend>Market Trend (Auto Refresh Every 10sec)</legend>
+                </fieldset>
+                <input type="submit" value="Update">
+            </form>
+            <img id="graph-img-tab3" class="graph-img" alt="Graph for Tab 3">
         </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
