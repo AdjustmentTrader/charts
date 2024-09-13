@@ -18,10 +18,12 @@ cookies = {
     '_ga': 'GA1.1.2100889719.1706939697',
     '_ga_LB470LF5SH': 'GS1.1.1725029890.344.1.1725029905.0.0.0',
 }
-
+##NIFTY-25100C-19SEP24:NIFTY-24900P-19SEP24:NIFTY-25000C-26SEP24:NIFTY-25000P-26SEP24
+##NIFTY-25500C-26SEP24:NIFTY-25000C-26SEP24:NIFTY-25000P-26SEP24:NIFTY-24500P-26SEP24
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
 }
+
 
 user = 'saravanan46'
 sid = 'du7u85s8imhpka97hdvn789onh'
@@ -305,8 +307,6 @@ def trend():
     # Define the symbols for DOW Futures, NASDAQ Futures, VIX, NSEBANK, and NSEI
     symbols = {
             'DOW Futures': 'YM=F',       # DOW Jones Index
-            'NASDAQ Futures': 'NQ=F',   # NASDAQ Composite Index
-            'VIX': '^VIX',               # VIX Index
             'NSEBANK': '^NSEBANK',       # Nifty Bank Index
             'NSEI': '^NSEI'              # Nifty 50 Index
     }
@@ -322,9 +322,8 @@ def trend():
     colors = {
             'DOW Futures': '#008080',      # Bright Orange
             'NASDAQ Futures': '#FF7F50',   # Bright Green
-            'VIX': '#800000',              # Bright Blue
-            'NSEBANK': '#0000CD',          # Bright Pink
-            'NSEI': '#000000',             # Bright Yellow
+            'NSEBANK': '#000000',          # Bright Pink
+            'NSEI': '#FF7F50',             # Bright Yellow
     }
 
     # Create a plot
@@ -333,7 +332,7 @@ def trend():
     for name, df in data.items():
         plt.plot(df.index, df['Normalized Close'], label=name, color=colors.get(name, '#000000'))
 
-    plt.title('Live Data for DOW Futures, NASDAQ Futures, VIX US, BANKNIFTY, and NIFTY (Normalized Patterns)')
+    plt.title('Live Data for DOW Futures, NASDAQ Futures, BANKNIFTY, and NIFTY (Normalized Patterns)')
     plt.xlabel('Date')
     plt.ylabel('Normalized Price')
     plt.legend()
