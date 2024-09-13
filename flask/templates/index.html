@@ -32,6 +32,7 @@
             $('.tab-content').hide(); // Hide all tabs
             $(selectedTab).show(); // Show the selected tab
             currentTab = selectedTab; // Update current tab
+            updateSavedDataDropdown(); // Update the saved data dropdown for the current tab
         }
 
         setInterval(function() {
@@ -55,6 +56,70 @@
             }
         }, 10000); // Refresh every 10 seconds
 
+        // Function to save form data with a name
+        function saveFormData(formId) {
+            const formData = $(formId).serializeArray();
+            const dataObject = {};
+            formData.forEach(item => {
+                dataObject[item.name] = item.value;
+            });
+
+            const savedName = prompt("Enter a name for this save:");
+            if (savedName) {
+                const currentTabKey = currentTab + '-saves';
+                let savedDataList = JSON.parse(localStorage.getItem(currentTabKey)) || [];
+                savedDataList.push({ name: savedName, data: dataObject });
+                localStorage.setItem(currentTabKey, JSON.stringify(savedDataList));
+                updateSavedDataDropdown();
+            }
+        }
+
+        // Function to load saved form data
+        function loadFormData(formId) {
+            const savedName = $(currentTab + ' .saved-data-dropdown').val();
+            if (savedName) {
+                const currentTabKey = currentTab + '-saves';
+                const savedDataList = JSON.parse(localStorage.getItem(currentTabKey)) || [];
+                const selectedData = savedDataList.find(item => item.name === savedName);
+
+                if (selectedData) {
+                    for (let key in selectedData.data) {
+                        $(`${formId} [name="${key}"]`).val(selectedData.data[key]);
+                    }
+                } else {
+                    alert('No saved data found with that name.');
+                }
+            } else {
+                alert('Please select saved data to load.');
+            }
+        }
+
+        // Function to delete saved form data
+        function deleteFormData() {
+            const savedName = $(currentTab + ' .saved-data-dropdown').val();
+            if (savedName) {
+                const currentTabKey = currentTab + '-saves';
+                let savedDataList = JSON.parse(localStorage.getItem(currentTabKey)) || [];
+                savedDataList = savedDataList.filter(item => item.name !== savedName);
+                localStorage.setItem(currentTabKey, JSON.stringify(savedDataList));
+                alert('Saved data deleted: ' + savedName);
+                updateSavedDataDropdown();
+            } else {
+                alert('Please select saved data to delete.');
+            }
+        }
+
+        // Function to update the saved data dropdown
+        function updateSavedDataDropdown() {
+            const currentTabKey = currentTab + '-saves';
+            const savedDataList = JSON.parse(localStorage.getItem(currentTabKey)) || [];
+            const dropdown = $(currentTab + ' .saved-data-dropdown');
+            dropdown.empty();
+            dropdown.append('<option value="">Select saved data</option>');
+            savedDataList.forEach(item => {
+                dropdown.append(`<option value="${item.name}">${item.name}</option>`);
+            });
+        }
 
         $(document).ready(function() {
             // Prevent default form submissions and handle auto-refresh
@@ -70,23 +135,24 @@
 
             $('#dataForm3').on('submit', function(event) {
                 event.preventDefault();
-                autoRefreshImage('#dataForm3', '#graph-img-tab3', '/cal');
+                autoRefreshImage('#dataForm3', '#graph-img-tab3', '/trend');
             });
 
             // Trigger initial image loads
             autoRefreshImage('#dataForm1', '#graph-img-tab1', '/');
             autoRefreshImage('#dataForm2', '#graph-img-tab2', '/cal');
-            autoRefreshImage('#dataForm3', '#graph-img-tab3', '/cal');
+            autoRefreshImage('#dataForm3', '#graph-img-tab3', '/trend');
 
             // Initialize tabs
             $('.tab-content').hide(); // Hide all tabs by default
             $('#tab1').show(); // Show the first tab
 
-            // Set up auto-refresh
-            setUpAutoRefresh();
+            // Update saved data dropdown for the first tab
+            updateSavedDataDropdown();
         });
     </script>
     <style>
+        /* Your existing styles */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -190,20 +256,33 @@
         .flash-messages li {
             margin-bottom: 5px;
         }
-        .graph-img {
-            display: block;
-            margin: 20px auto;
+        .save-load-buttons {
+            margin-bottom: 20px;
+        }
+        .save-load-buttons button {
+            margin-right: 10px;
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .save-load-buttons button:hover {
+            background-color: #0056b3;
+        }
+        .saved-data-dropdown {
+            margin-bottom: 10px;
+            padding: 10px;
+            width: calc(100% - 22px);
+            border-radius: 5px;
             border: 1px solid #ddd;
-            border-radius: 10px;
-            max-width: 100%;
-            height: auto;
-            overflow-x: auto; /* Ensure horizontal scrolling if needed */
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>ATM Multiple Strike and price difference</h1>
+        <h1>ATM Multiple Strike and Price Difference</h1>
         <div class="tabs">
             <select onchange="onTabChange(event)">
                 <option value="tab1">Straddle</option>
@@ -212,6 +291,7 @@
             </select>
         </div>
 
+        <!-- Tab 1 -->
         <div id="tab1" class="tab-content">
             <form id="dataForm1" method="POST">
                 <fieldset>
@@ -234,14 +314,19 @@
                     <input type="submit" value="Update">
                 </fieldset>
             </form>
+            <div class="save-load-buttons">
+                <button onclick="saveFormData('#dataForm1')">Save</button>
+                <select class="saved-data-dropdown"></select>
+                <button onclick="loadFormData('#dataForm1')">Load</button>
+                <button onclick="deleteFormData()">Delete</button>
+            </div>
             <img id="graph-img-tab1" class="graph-img" alt="Graph for Tab 1">
         </div>
 
+        <!-- Tab 2 -->
         <div id="tab2" class="tab-content">
             <form id="dataForm2" method="POST">
                 <fieldset>
-                    <!-- <legend>DoubleCalendar and IronButterfly and price difference</legend> -->
-                    
                     <!-- First Set of Fields: DoubleCalendar -->
                     <fieldset>
                         <legend>DoubleCalendar</legend>
@@ -303,16 +388,30 @@
                     <input type="submit" value="Update">
                 </fieldset>
             </form>
+            <div class="save-load-buttons">
+                <button onclick="saveFormData('#dataForm2')">Save</button>
+                <select class="saved-data-dropdown"></select>
+                <button onclick="loadFormData('#dataForm2')">Load</button>
+                <button onclick="deleteFormData()">Delete</button>
+            </div>
             <img id="graph-img-tab2" class="graph-img" alt="Graph for Tab 2">
         </div>
 
+        <!-- Tab 3 -->
         <div id="tab3" class="tab-content">
             <form id="dataForm3" method="POST">
                 <fieldset>
                     <legend>Market Trend (Auto Refresh Every 10sec)</legend>
+                    <!-- You can add form fields here if needed -->
                 </fieldset>
                 <input type="submit" value="Update">
             </form>
+            <div class="save-load-buttons">
+                <button onclick="saveFormData('#dataForm3')">Save</button>
+                <select class="saved-data-dropdown"></select>
+                <button onclick="loadFormData('#dataForm3')">Load</button>
+                <button onclick="deleteFormData()">Delete</button>
+            </div>
             <img id="graph-img-tab3" class="graph-img" alt="Graph for Tab 3">
         </div>
 
