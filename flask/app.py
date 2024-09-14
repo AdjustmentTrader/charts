@@ -559,4 +559,4 @@ def get_symbol_url(symbol_nf, symbol_sx):
     return f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForPremium_m_cmpt_curr_tj.php?mode=INTRA&symbol={symbol_val}-{symbol_date}&timeframe=5min&u={user}&sid={sid}"
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
