@@ -43,7 +43,6 @@ def parse_data(data):
     rows = data.splitlines()
     dates = []
     values = []
-
     for row in rows:
         parts = row.split(',')
         if len(parts) > 1:
@@ -54,7 +53,6 @@ def parse_data(data):
                 values.append(value)
             except ValueError as e:
                 print(f"Data parsing error: {e}")
-
     rowss = pd.DataFrame({'DateTime': dates, 'Value': values})
     return rowss
 
@@ -273,6 +271,7 @@ def index():
         print(nifty_url)
         data_nf = fetch_data(nifty_url)
         data_sx = fetch_data(sensex_url)
+        print(get_symbol_url(symbol_nf, symbol_sx))
         data_future = fetch_data(get_symbol_url(symbol_nf, symbol_sx))
         if data_nf and data_sx and data_future:
             df_nf = parse_data(data_nf)
@@ -283,6 +282,8 @@ def index():
             df_future_downsampled = downsample_data(df_future, resample_freq)
             # Merge the data on 'DateTime' column
             df_merged = pd.merge(df_nf_downsampled, df_sx_downsampled, on='DateTime', suffixes=('_NF', '_SX'))
+            pd.set_option('display.max_rows', None)  # Display all rows
+            pd.set_option('display.max_columns', None)  # Display all columns
             df_merged = pd.merge(df_merged, df_future_downsampled, on='DateTime')
             df_merged.rename(columns={'Value': 'Value_FUTURE'}, inplace=True)
             df_merged = df_merged[(df_merged['DateTime'] >= start_date) & (df_merged['DateTime'] <= end_date)]
@@ -290,8 +291,6 @@ def index():
             # Calculate the increase in Difference
             #df_merged['Difference_Increasing'] = df_merged['Difference'].diff().fillna(0) > 0 & (df_merged['Difference'] > 20)
             df_merged['Difference_Increasing'] = df_merged.index.map(lambda idx: check_difference_increase(idx, df_merged))
-
-            print(df_merged)
             img = plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date)
             
             return Response(img, mimetype='image/png')
@@ -341,7 +340,6 @@ def index_cal():
         url_if = (f"{base_url}?mode={mode}&symbol={symbols2}&timeframe={timeframe}&u={user}&sid={sid}"
                f"&q1={q1_2}&q2={q2_2}&q3={q3_2}&q4={q4_2}")
         data_cal = fetch_data(url_cal)
-        print(url_cal)
         data_if = fetch_data(url_if)
         data_future = fetch_data(get_symbol_url(symbols1,symbols2))
         if data_cal and data_if and data_future:
@@ -385,7 +383,6 @@ def index_ironfly():
         url_if = (f"{base_url}?mode={mode}&symbol={symbols2}&timeframe={timeframe}&u={user}&sid={sid}"
                f"&q1={q1_2}&q2={q2_2}&q3={q3_2}&q4={q4_2}")
         data_cal = fetch_data(url_if)
-        print(data_cal)
         data_future = fetch_data(get_symbol_url(symbols2, symbols2))
         if data_cal and data_future:
             df_cal = parse_data_cal(data_cal)
@@ -453,9 +450,7 @@ def index_spreadchart():
         # Build the complete URL
         url_spread = (f"{base_url}?mode={mode}&symbol={symbols2}&timeframe={timeframe}&u={user}&sid={sid}"
                f"&q1={q1_2}&q2={q2_2}")
-        print(url_spread)
         data_cal = fetch_data(url_spread)
-        print(data_cal)
         data_future = fetch_data(get_symbol_url(symbols2, symbols2))
         if data_cal and data_future:
             df_cal = parse_data_cal(data_cal)
@@ -556,7 +551,7 @@ def get_symbol_url(symbol_nf, symbol_sx):
     elif 'NIFTY' in symbol_sx:
         symbol_val = 'NIFTY'
     symbol_date = last_weekday_date.strftime('%d%b%y').upper()
-    return f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForPremium_m_cmpt_curr_tj.php?mode=INTRA&symbol={symbol_val}-{symbol_date}&timeframe=5min&u={user}&sid={sid}"
+    return f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForPremium_m_cmpt_curr_tj.php?mode=INTRA&symbol={symbol_val}-{symbol_date}&timeframe=1min&u={user}&sid={sid}"
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
