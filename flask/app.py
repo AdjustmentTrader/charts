@@ -113,6 +113,12 @@ def plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date):
             ax1.text(row['DateTime'], row['Value_SX'], f'{row["Value_SX"]:.2f}', color='red', fontsize=8, ha='right', va='bottom')
             ax1.text(row['DateTime'], row['Difference'], f'{row["Difference"]:.2f}', color='green', fontsize=8, ha='right', va='bottom')
 
+        # Highlight sections where Difference is increasing
+        highlight = df_merged['Difference_Increasing']
+        plt.fill_between(df_merged['DateTime'], df_merged['Value_NF'].min(), df_merged['Value_NF'].max(),
+                        where=highlight,
+                        color='green', alpha=0.3, label='Increasing Difference Highlight')
+        
         ax1.set_xlabel('DateTime')
         ax1.set_ylabel('Value')
         ax1.set_title(f'{symbol_nf} and {symbol_sx} with Difference for {start_date} to {end_date}')
@@ -196,6 +202,50 @@ def plot_data_cal_if(df_merged, symbol_nf, symbol_sx, start_date, end_date):
     plt.close()
     return img
 
+def plot_data_doublcal(df_merged, symbol_nf, start_date, end_date):
+    fig, ax1 = plt.subplots(figsize=(16, 8))
+    
+    if not df_merged.empty:
+        # Plot NIFTY data on the primary y-axis
+        ax1.plot(df_merged['DateTime'], df_merged['Value_CAL'], label=f'{symbol_nf}', color='blue', linewidth=2, marker='o')
+        # Annotate each point with its value
+        for i, row in df_merged.iterrows():
+            ax1.text(row['DateTime'], row['Value_CAL'], f'{row["Value_CAL"]:.2f}', color='blue', fontsize=8, ha='right', va='bottom')
+
+        ax1.set_xlabel('DateTime')
+        ax1.set_ylabel('Value')
+        ax1.set_title(f'{symbol_nf}  for {start_date} to {end_date}')
+        ax1.legend(loc='upper left')
+        ax1.grid(True)
+        ax1.tick_params(axis='x', rotation=45)
+
+        # Create a secondary y-axis for FUTURE
+        ax2 = ax1.twinx()
+        ax2.plot(df_merged['DateTime'], df_merged['Value_FUTURE'], label='FUTURE', color='black', linewidth=2, marker='o')
+        
+        # Annotate each point for FUTURE
+        for i, row in df_merged.iterrows():
+            ax2.text(row['DateTime'], row['Value_FUTURE'], f'{row["Value_FUTURE"]:.2f}', color='black', fontsize=8, ha='right', va='bottom')
+
+        ax2.set_ylabel('FUTURE Value', color='black')
+        ax2.tick_params(axis='y', labelcolor='black')
+        
+        # Combine legends from both y-axes
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax1.legend(lines1 + lines2, labels1 + labels2, loc=(0.5, 0.5), fontsize='small', frameon=True)
+
+        plt.tight_layout()
+    else:
+        print("DataFrame is empty. No data to plot.")
+    
+    # Save plot to BytesIO object and return it
+    img = BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    plt.close()
+    return img
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -223,7 +273,7 @@ def index():
         print(nifty_url)
         data_nf = fetch_data(nifty_url)
         data_sx = fetch_data(sensex_url)
-        data_future = fetch_data(get_symbol_url(symbol_nf))
+        data_future = fetch_data(get_symbol_url(symbol_nf, symbol_sx))
         if data_nf and data_sx and data_future:
             df_nf = parse_data(data_nf)
             df_sx = parse_data(data_sx)
@@ -237,7 +287,11 @@ def index():
             df_merged.rename(columns={'Value': 'Value_FUTURE'}, inplace=True)
             df_merged = df_merged[(df_merged['DateTime'] >= start_date) & (df_merged['DateTime'] <= end_date)]
             df_merged['Difference'] = df_merged['Value_NF'] - df_merged['Value_SX']
-            
+            # Calculate the increase in Difference
+            #df_merged['Difference_Increasing'] = df_merged['Difference'].diff().fillna(0) > 0 & (df_merged['Difference'] > 20)
+            df_merged['Difference_Increasing'] = df_merged.index.map(lambda idx: check_difference_increase(idx, df_merged))
+
+            print(df_merged)
             img = plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date)
             
             return Response(img, mimetype='image/png')
@@ -246,6 +300,11 @@ def index():
             return "Error fetching data."
     
     return render_template('index.html')
+
+def check_difference_increase(row_index, df):
+                current_diff = df.loc[row_index, 'Difference']
+                previous_diffs = df.loc[:row_index, 'Difference']
+                return any(current_diff - prev_diff > 10 for prev_diff in previous_diffs)
 
 @app.route('/cal', methods=['GET', 'POST'])
 def index_cal():
@@ -272,8 +331,6 @@ def index_cal():
         # Construct the URL
         base_url = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForDoubleCalendar_beta.php'
         mode = 'INTRA'
-        user = 'saravanan46'
-        sid = 'du7u85s8imhpka97hdvn789onh'
         
         # Assuming you need to format symbols, timeframe, and other parameters
         timeframe = '1min'
@@ -284,8 +341,9 @@ def index_cal():
         url_if = (f"{base_url}?mode={mode}&symbol={symbols2}&timeframe={timeframe}&u={user}&sid={sid}"
                f"&q1={q1_2}&q2={q2_2}&q3={q3_2}&q4={q4_2}")
         data_cal = fetch_data(url_cal)
+        print(url_cal)
         data_if = fetch_data(url_if)
-        data_future = fetch_data(get_symbol_url(symbols1))
+        data_future = fetch_data(get_symbol_url(symbols1,symbols2))
         if data_cal and data_if and data_future:
             df_cal = parse_data_cal(data_cal)
             df_cal_downsampled = downsample_data(df_cal, resample_freq1)
@@ -299,6 +357,115 @@ def index_cal():
             df_merged = pd.merge(df_merged, df_future_downsampled, on='DateTime')
             df_merged.rename(columns={'Value': 'Value_FUTURE'}, inplace=True)
             img = plot_data_cal_if(df_merged, symbols1, symbols2, start_date1, end_date1)
+
+    return Response(img, mimetype='image/png')
+
+
+@app.route('/ironfly', methods=['GET', 'POST'])
+def index_ironfly():
+    if request.method == 'POST':
+        ##second input
+        symbols2 = request.form.get('symbols2')
+        q1_2 = request.form.get('q1_2')
+        q2_2 = request.form.get('q2_2')
+        q3_2 = request.form.get('q3_2')
+        q4_2 = request.form.get('q4_2')
+        start_date2 = request.form.get('start_date2')
+        end_date2 = request.form.get('end_date2')
+        resample_freq2 = request.form.get('resample_freq2', '15T')  # Default to '15T' if not provided
+
+        # Construct the URL
+        base_url = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForDoubleCalendar_beta.php'
+        mode = 'INTRA'
+        
+        # Assuming you need to format symbols, timeframe, and other parameters
+        timeframe = '1min'
+        
+        # Build the complete URL
+        url_if = (f"{base_url}?mode={mode}&symbol={symbols2}&timeframe={timeframe}&u={user}&sid={sid}"
+               f"&q1={q1_2}&q2={q2_2}&q3={q3_2}&q4={q4_2}")
+        data_cal = fetch_data(url_if)
+        print(data_cal)
+        data_future = fetch_data(get_symbol_url(symbols2, symbols2))
+        if data_cal and data_future:
+            df_cal = parse_data_cal(data_cal)
+            df_cal_downsampled = downsample_data(df_cal, resample_freq2)
+            df_future = parse_data(data_future)
+            df_future_downsampled = downsample_data(df_future, resample_freq2)
+            df_merged = pd.merge(df_cal_downsampled, df_future_downsampled, on='DateTime', suffixes=('_CAL', '_FUTURE'))
+            df_merged = df_merged[(df_merged['DateTime'] >= start_date2) & (df_merged['DateTime'] <= end_date2)]
+            df_merged.rename(columns={'Value': 'Value_FUTURE'}, inplace=True)
+            img = plot_data_doublcal(df_merged, symbols2, start_date2, end_date2)
+
+    return Response(img, mimetype='image/png')
+
+@app.route('/doubleCal', methods=['GET', 'POST'])
+def index_doubleCal():
+    if request.method == 'POST':
+        symbols1 = request.form.get('symbols1')
+        q1_1 = request.form.get('q1_1')
+        q2_1 = request.form.get('q2_1')
+        q3_1 = request.form.get('q3_1')
+        q4_1 = request.form.get('q4_1')
+        start_date1 = request.form.get('start_date1')
+        end_date1 = request.form.get('end_date1')
+        resample_freq1 = request.form.get('resample_freq1', '15T')
+
+        # Construct the URL
+        base_url = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForDoubleCalendar_beta.php'
+        mode = 'INTRA'
+        
+        # Assuming you need to format symbols, timeframe, and other parameters
+        timeframe = '1min'
+        
+        # Build the complete URL
+        url_cal = (f"{base_url}?mode={mode}&symbol={symbols1}&timeframe={timeframe}&u={user}&sid={sid}"
+               f"&q1={q1_1}&q2={q2_1}&q3={q3_1}&q4={q4_1}")
+        data_cal = fetch_data(url_cal)
+        data_future = fetch_data(get_symbol_url(symbols1, symbols1))
+        if data_cal and data_future:
+            df_cal = parse_data_cal(data_cal)
+            df_cal_downsampled = downsample_data(df_cal, resample_freq1)
+            df_future = parse_data(data_future)
+            df_future_downsampled = downsample_data(df_future, resample_freq1)
+            df_merged = pd.merge(df_cal_downsampled, df_future_downsampled, on='DateTime', suffixes=('_CAL', '_FUTURE'))
+            df_merged = df_merged[(df_merged['DateTime'] >= start_date1) & (df_merged['DateTime'] <= end_date1)]
+            df_merged.rename(columns={'Value': 'Value_FUTURE'}, inplace=True)
+            img = plot_data_doublcal(df_merged, symbols1, start_date1, end_date1)
+
+    return Response(img, mimetype='image/png')
+
+@app.route('/spreadchart', methods=['GET', 'POST'])
+def index_spreadchart():
+    if request.method == 'POST':
+        symbols2 = request.form.get('symbols2')
+        q1_2 = request.form.get('q1_2')
+        q2_2 = request.form.get('q2_2')
+        start_date2 = request.form.get('start_date2')
+        end_date2 = request.form.get('end_date2')
+        resample_freq2 = request.form.get('resample_freq2', '15T')  # Default to '15T' if not provided
+
+        # Construct the URL
+        base_url = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForSpreadQty_m_curr.php'
+        mode = 'INTRA'
+        # Assuming you need to format symbols, timeframe, and other parameters
+        timeframe = '1min'
+        # Build the complete URL
+        url_spread = (f"{base_url}?mode={mode}&symbol={symbols2}&timeframe={timeframe}&u={user}&sid={sid}"
+               f"&q1={q1_2}&q2={q2_2}")
+        print(url_spread)
+        data_cal = fetch_data(url_spread)
+        print(data_cal)
+        data_future = fetch_data(get_symbol_url(symbols2, symbols2))
+        if data_cal and data_future:
+            df_cal = parse_data_cal(data_cal)
+            df_cal_downsampled = downsample_data(df_cal, resample_freq2)
+            df_future = parse_data(data_future)
+            df_future_downsampled = downsample_data(df_future, resample_freq2)
+            df_merged = pd.merge(df_cal_downsampled, df_future_downsampled, on='DateTime', suffixes=('_CAL', '_FUTURE'))
+            df_merged = df_merged[(df_merged['DateTime'] >= start_date2) & (df_merged['DateTime'] <= end_date2)]
+            df_merged.rename(columns={'Value': 'Value_FUTURE'}, inplace=True)
+            img = plot_data_doublcal(df_merged, symbols2, start_date2, end_date2)
 
     return Response(img, mimetype='image/png')
 
@@ -332,7 +499,7 @@ def trend():
     for name, df in data.items():
         plt.plot(df.index, df['Normalized Close'], label=name, color=colors.get(name, '#000000'))
 
-    plt.title('Live Data for DOW Futures, NASDAQ Futures, BANKNIFTY, and NIFTY (Normalized Patterns)')
+    plt.title('Live Data for DOW Futures, BANKNIFTY, and NIFTY (Normalized Patterns)')
     plt.xlabel('Date')
     plt.ylabel('Normalized Price')
     plt.legend()
@@ -365,7 +532,6 @@ def get_last_weekday_date(symbol):
     today = datetime.today()
     year = today.year
     month = today.month
-    
     if 'BANKNIFTY' in symbol:
         # 2 = Wednesday
         last_weekday = last_weekday_of_month(year, month, 2)
@@ -373,20 +539,27 @@ def get_last_weekday_date(symbol):
         # 3 = Thursday
         last_weekday = last_weekday_of_month(year, month, 3)
     else:
-        raise ValueError("Invalid symbol")
+        return None
     
     return last_weekday
 
-def get_symbol_url(symbol):
-    last_weekday_date = get_last_weekday_date(symbol)
-    print("caaaa")
-    print(symbol)
-    if 'BANKNIFTY' in symbol:
+def get_symbol_url(symbol_nf, symbol_sx):
+    last_weekday_date = get_last_weekday_date(symbol_nf)
+    if last_weekday_date is None:
+        last_weekday_date = get_last_weekday_date(symbol_sx)
+    if 'BANKNIFTY' in symbol_nf:
         symbol_val = 'BANKNIFTY'
-    elif 'NIFTY' in symbol:
+    elif 'NIFTY' in symbol_nf:
+        symbol_val = 'NIFTY'
+    elif 'BANKNIFTY' in symbol_sx:
+        symbol_val = 'BANKNIFTY'
+    elif 'NIFTY' in symbol_sx:
         symbol_val = 'NIFTY'
     symbol_date = last_weekday_date.strftime('%d%b%y').upper()
     return f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForPremium_m_cmpt_curr_tj.php?mode=INTRA&symbol={symbol_val}-{symbol_date}&timeframe=5min&u={user}&sid={sid}"
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
+#https://www.icharts.in/opt/hcharts/stx8req/php/getdataForSpreadQty_m_curr.php?mode=INTRA&symbol=BANKNIFTY-51800C-18SEP24:BANKNIFTY-51900C-18SEP24&timeframe=1min&u=saravanan46&sid=du7u85s8imhpka97hdvn789onh&q1=1&q2=4
