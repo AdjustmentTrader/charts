@@ -559,7 +559,4 @@ def get_symbol_url(symbol_nf, symbol_sx):
     return f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForPremium_m_cmpt_curr_tj.php?mode=INTRA&symbol={symbol_val}-{symbol_date}&timeframe=5min&u={user}&sid={sid}"
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-
-#https://www.icharts.in/opt/hcharts/stx8req/php/getdataForSpreadQty_m_curr.php?mode=INTRA&symbol=BANKNIFTY-51800C-18SEP24:BANKNIFTY-51900C-18SEP24&timeframe=1min&u=saravanan46&sid=du7u85s8imhpka97hdvn789onh&q1=1&q2=4
+    app.run(host='0.0.0.0', port=80, debug=True)
