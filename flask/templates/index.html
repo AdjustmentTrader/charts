@@ -51,10 +51,22 @@
                     formId = '#dataForm3';
                     imgId = '#graph-img-tab3';
                     url = '/trend'; 
+                }else if (currentTab === '#tab4') {
+                    formId = '#dataForm4';
+                    imgId = '#graph-img-tab4';
+                    url = '/doubleCal'; 
+                }else if (currentTab === '#tab5') {
+                    formId = '#dataForm5';
+                    imgId = '#graph-img-tab5';
+                    url = '/ironfly'; 
+                }else if (currentTab === '#tab6') {
+                    formId = '#dataForm6';
+                    imgId = '#graph-img-tab6';
+                    url = '/spreadchart'; 
                 }
                 autoRefreshImage(formId, imgId, url);
             }
-        }, 10000); // Refresh every 10 seconds
+        }, 60000); // Refresh every 10 seconds
 
         // Function to save form data with a name
         function saveFormData(formId) {
@@ -138,10 +150,27 @@
                 autoRefreshImage('#dataForm3', '#graph-img-tab3', '/trend');
             });
 
+            $('#dataForm4').on('submit', function(event) {
+                event.preventDefault();
+                autoRefreshImage('#dataForm4', '#graph-img-tab4', '/doubleCal');
+            });
+
+            $('#dataForm5').on('submit', function(event) {
+                event.preventDefault();
+                autoRefreshImage('#dataForm5', '#graph-img-tab5', '/ironfly');
+            });
+
+            $('#dataForm6').on('submit', function(event) {
+                event.preventDefault();
+                autoRefreshImage('#dataForm6', '#graph-img-tab6', '/spreadchart');
+            });
             // Trigger initial image loads
             autoRefreshImage('#dataForm1', '#graph-img-tab1', '/');
             autoRefreshImage('#dataForm2', '#graph-img-tab2', '/cal');
             autoRefreshImage('#dataForm3', '#graph-img-tab3', '/trend');
+            autoRefreshImage('#dataForm4', '#graph-img-tab4', '/doubleCal');
+            autoRefreshImage('#dataForm5', '#graph-img-tab5', '/ironfly');
+            autoRefreshImage('#dataForm6', '#graph-img-tab6', '/spreadchart');
 
             // Initialize tabs
             $('.tab-content').hide(); // Hide all tabs by default
@@ -288,6 +317,9 @@
                 <option value="tab1">Straddle</option>
                 <option value="tab2">DoubleCalendar and IronButterfly</option>
                 <option value="tab3">Market Trend</option>
+                <option value="tab4">DoubleCalendar</option>
+                <option value="tab5">IronButterfly</option>
+                <option value="tab6">SpreadChart</option>
             </select>
         </div>
 
@@ -305,20 +337,23 @@
                     <label for="start_date">Start Date:</label>
                     <input type="date" id="start_date" name="start_date" required>
                     
-                    <label for="end_date">End Date:</label>
+                    <label for="end_date">End Date: should be next day of start_date should be next day of start_date</label>
                     <input type="date" id="end_date" name="end_date" required>
                     
                     <label for="resample_freq">Resample Frequency:</label>
                     <input type="text" id="resample_freq" name="resample_freq" value="15T" placeholder="15T">
                     
-                    <input type="submit" value="Update">
+                    <input type="submit" value="Fetch Data">
                 </fieldset>
             </form>
             <div class="save-load-buttons">
-                <button onclick="saveFormData('#dataForm1')">Save</button>
                 <select class="saved-data-dropdown"></select>
+                <button onclick="saveFormData('#dataForm1')">Save</button>
                 <button onclick="loadFormData('#dataForm1')">Load</button>
                 <button onclick="deleteFormData()">Delete</button>
+                <label for="Auto" style="display: inline-block; font-weight: bold;  color: grey; font-size: 16px; text-align: center; ">
+                            Graph will be Auto Refresh for every 60sec
+                </label>
             </div>
             <img id="graph-img-tab1" class="graph-img" alt="Graph for Tab 1">
         </div>
@@ -349,7 +384,7 @@
                         <label for="start_date1">Start Date:</label>
                         <input type="date" id="start_date1" name="start_date1" required>
                         
-                        <label for="end_date1">End Date:</label>
+                        <label for="end_date1">End Date: should be next day of start_date</label>
                         <input type="date" id="end_date1" name="end_date1" required>
                         
                         <label for="resample_freq1">Resample Frequency:</label>
@@ -378,21 +413,24 @@
                         <label for="start_date2">Start Date:</label>
                         <input type="date" id="start_date2" name="start_date2" required>
                         
-                        <label for="end_date2">End Date:</label>
+                        <label for="end_date2">End Date: should be next day of start_date</label>
                         <input type="date" id="end_date2" name="end_date2" required>
                         
                         <label for="resample_freq2">Resample Frequency:</label>
                         <input type="text" id="resample_freq2" name="resample_freq2" value="15T">
                     </fieldset>
-        
-                    <input type="submit" value="Update">
+                    
+                    <input type="submit" value="Fetch Data">
                 </fieldset>
             </form>
             <div class="save-load-buttons">
-                <button onclick="saveFormData('#dataForm2')">Save</button>
                 <select class="saved-data-dropdown"></select>
+                <button onclick="saveFormData('#dataForm2')">Save</button>
                 <button onclick="loadFormData('#dataForm2')">Load</button>
                 <button onclick="deleteFormData()">Delete</button>
+                <label for="Auto" style="display: inline-block; font-weight: bold;  color: grey; font-size: 16px; text-align: center; ">
+                            Graph will be Auto Refresh for every 60sec
+                </label>
             </div>
             <img id="graph-img-tab2" class="graph-img" alt="Graph for Tab 2">
         </div>
@@ -401,18 +439,155 @@
         <div id="tab3" class="tab-content">
             <form id="dataForm3" method="POST">
                 <fieldset>
-                    <legend>Market Trend (Auto Refresh Every 10sec)</legend>
+                    <legend>Market Trend (Auto Refresh Every 60sec)</legend>
                     <!-- You can add form fields here if needed -->
                 </fieldset>
-                <input type="submit" value="Update">
+                <input type="submit" value="Fetch Data">
             </form>
-            <div class="save-load-buttons">
+            <!-- <div class="save-load-buttons">
                 <button onclick="saveFormData('#dataForm3')">Save</button>
                 <select class="saved-data-dropdown"></select>
                 <button onclick="loadFormData('#dataForm3')">Load</button>
                 <button onclick="deleteFormData()">Delete</button>
-            </div>
+            </div> -->
             <img id="graph-img-tab3" class="graph-img" alt="Graph for Tab 3">
+        </div>
+
+        <!-- Tab 4 -->
+        <div id="tab4" class="tab-content">
+            <form id="dataForm4" method="POST">
+                <fieldset>
+                    <!-- First Set of Fields: DoubleCalendar -->
+                    <fieldset>
+                        <legend>DoubleCalendar</legend>
+                        
+                        <label for="symbols1">Symbols: CE BUY WEEKLY - PE BUY WEEKLY - CE SELL NEXT - PE SELL NEXT</label>
+                        <input type="text" id="symbols1" name="symbols1" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
+                        
+                        <label for="q1_1">Q1:</label>
+                        <input type="number" id="q1_1" name="q1_1" value="2" required>
+                        
+                        <label for="q2_1">Q2:</label>
+                        <input type="number" id="q2_1" name="q2_1" value="2" required>
+                        
+                        <label for="q3_1">Q3:</label>
+                        <input type="number" id="q3_1" name="q3_1" value="2" required>
+                        
+                        <label for="q4_1">Q4:</label>
+                        <input type="number" id="q4_1" name="q4_1" value="2" required>
+                        
+                        <label for="start_date1">Start Date:</label>
+                        <input type="date" id="start_date1" name="start_date1" required>
+                        
+                        <label for="end_date1">End Date: should be next day of start_date</label>
+                        <input type="date" id="end_date1" name="end_date1" required>
+                        
+                        <label for="resample_freq1">Resample Frequency:</label>
+                        <input type="text" id="resample_freq1" name="resample_freq1" value="15T">
+                    </fieldset>
+                    <input type="submit" value="Fetch Data">
+                </fieldset>
+            </form>
+            <div class="save-load-buttons">
+                <select class="saved-data-dropdown"></select>
+                <button onclick="saveFormData('#dataForm4')">Save</button>
+                <button onclick="loadFormData('#dataForm4')">Load</button>
+                <button onclick="deleteFormData()">Delete</button>
+                <label for="Auto" style="display: inline-block; font-weight: bold;  color: grey; font-size: 16px; text-align: center; ">
+                    Graph will be Auto Refresh for every 60sec
+                </label>
+            </div>
+            <img id="graph-img-tab4" class="graph-img" alt="Graph for Tab 4">
+        </div>
+
+        <!-- Tab 5 -->
+        <div id="tab5" class="tab-content">
+            <form id="dataForm5" method="POST">
+                <fieldset>
+                    <!-- Second Set of Fields: IronButterfly -->
+                    <fieldset>
+                        <legend>IronButterfly</legend>
+                        
+                        <label for="symbols2">Symbols: CE BUY - CE SELL - PE SELL - PE BUY</label>
+                        <input type="text" id="symbols2" name="symbols2" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
+                        
+                        <label for="q1_2">Q1:</label>
+                        <input type="number" id="q1_2" name="q1_2" value="1" required>
+                        
+                        <label for="q2_2">Q2:</label>
+                        <input type="number" id="q2_2" name="q2_2" value="1" required>
+                        
+                        <label for="q3_2">Q3:</label>
+                        <input type="number" id="q3_2" name="q3_2" value="1" required>
+                        
+                        <label for="q4_2">Q4:</label>
+                        <input type="number" id="q4_2" name="q4_2" value="1" required>
+                        
+                        <label for="start_date2">Start Date:</label>
+                        <input type="date" id="start_date2" name="start_date2" required>
+                        
+                        <label for="end_date2">End Date: should be next day of start_date</label>
+                        <input type="date" id="end_date2" name="end_date2" required>
+                        
+                        <label for="resample_freq2">Resample Frequency:</label>
+                        <input type="text" id="resample_freq2" name="resample_freq2" value="15T">
+                    </fieldset>
+                    
+                    <input type="submit" value="Fetch Data">
+                </fieldset>
+            </form>
+            <div class="save-load-buttons">
+                <select class="saved-data-dropdown"></select>
+                <button onclick="saveFormData('#dataForm5')">Save</button>
+                <button onclick="loadFormData('#dataForm5')">Load</button>
+                <button onclick="deleteFormData()">Delete</button>
+                <label for="Auto" style="display: inline-block; font-weight: bold;  color: grey; font-size: 16px; text-align: center; ">
+                    Graph will be Auto Refresh for every 60sec
+                </label>
+            </div>
+            <img id="graph-img-tab5" class="graph-img" alt="Graph for Tab 5">
+        </div>
+
+        <!-- Tab 5 -->
+        <div id="tab6" class="tab-content">
+            <form id="dataForm6" method="POST">
+                <fieldset>
+                    <!-- Second Set of Fields: SpreadChart -->
+                    <fieldset>
+                        <legend>SpreadChart</legend>
+                        
+                        <label for="symbols2">Symbols:  LONG - SHORT </label>
+                        <input type="text" id="symbols2" name="symbols2" placeholder="BANKNIFTY-51800C-18SEP24:BANKNIFTY-51900C-18SEP24" required>
+                        
+                        <label for="q1_2">Q1: LONG QTY</label>
+                        <input type="number" id="q1_2" name="q1_2" value="1" required>
+                        
+                        <label for="q2_2">Q2: SHORT QTY</label>
+                        <input type="number" id="q2_2" name="q2_2" value="1" required>
+                        
+                        <label for="start_date2">Start Date:</label>
+                        <input type="date" id="start_date2" name="start_date2" required>
+                        
+                        <label for="end_date2">End Date: should be next day of start_date</label>
+                        <input type="date" id="end_date2" name="end_date2" required>
+                        
+                        <label for="resample_freq2">Resample Frequency:</label>
+                        <input type="text" id="resample_freq2" name="resample_freq2" value="15T">
+                    </fieldset>
+                    
+                    <input type="submit" value="Fetch Data">
+                </fieldset>
+            </form>
+            <div class="save-load-buttons">
+                <select class="saved-data-dropdown"></select>
+                <button onclick="saveFormData('#dataForm6')">Save</button>
+                <button onclick="loadFormData('#dataForm6')">Load</button>
+                <button onclick="deleteFormData()">Delete</button>
+                <label for="Auto" style="display: inline-block; font-weight: bold;  color: grey; font-size: 16px; text-align: center; ">
+                    Graph will be Auto Refresh for every 60sec
+                </label>
+            </div>
+            <img id="graph-img-tab6" class="graph-img" alt="Graph for Tab 6">
         </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
