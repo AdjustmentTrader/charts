@@ -292,9 +292,11 @@ def index():
             #df_merged['Difference_Increasing'] = df_merged['Difference'].diff().fillna(0) > 0 & (df_merged['Difference'] > 20)
             df_merged['Difference_Increasing'] = df_merged.index.map(lambda idx: check_difference_increase(idx, df_merged))
             img = plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date)
-            
-            return Response(img, mimetype='image/png')
-
+            last_value = df_merged['Difference_Increasing'].iloc[-1]
+            response = Response(img, mimetype='image/png')
+            # Add the variables to the headers
+            response.headers['X-Last-Value'] = str(last_value)
+            return response
         else:
             return "Error fetching data."
     
@@ -538,10 +540,70 @@ def get_last_weekday_date(symbol):
     
     return last_weekday
 
+
+from datetime import datetime, timedelta
+import calendar
+
+# Helper function to get the last weekday of a month
+def get_last_weekday(year, month, weekday):
+    # Get the number of days in the month
+    last_day_of_month = calendar.monthrange(year, month)[1]
+    last_date = datetime(year, month, last_day_of_month)
+    
+    # Go backwards to find the last specified weekday
+    while last_date.weekday() != weekday:
+        last_date -= timedelta(days=1)
+    
+    return last_date
+
+# Function to extract month and year in MONYY format from symbol and get the last weekday
+def get_last_weekday_date(symbol):
+    # Extract the month and year from the symbol
+    try:
+        mon_yy = symbol[-5:]  # Extract last 5 characters for the format MONYY (e.g., JUN24)
+        month_str = mon_yy[:3]  # e.g., 'JUN'
+        year_str = mon_yy[3:]   # e.g., '24'
+        month = datetime.strptime(month_str, "%b").month  # Convert month name to number
+        year = 2000 + int(year_str)  # Convert year to 4 digits
+    except ValueError:
+        return None
+
+    # Determine the last weekday based on the symbol type
+    if 'BANKNIFTY' in symbol:
+        # 2 = Wednesday
+        last_weekday = get_last_weekday(year, month, 2)
+    elif 'NIFTY' in symbol:
+        # 3 = Thursday
+        last_weekday = get_last_weekday(year, month, 3)
+    else:
+        return None
+    
+    return last_weekday
+
+# Function to process symbols and get the last weekday for each
+def process_symbols(symbols):
+    # Split the symbols by ':'
+    symbol_list = symbols.split(':')
+    
+    for symbol in symbol_list:
+        last_weekday = get_last_weekday_date(symbol)
+        if last_weekday:
+            # Format the date to uppercase '26JUN2024'
+            formatted_date = last_weekday.strftime('%d%b%Y').upper()
+            print(f"{symbol}: Last weekday is {formatted_date}")
+        else:
+            print(f"{symbol}: Could not extract date.")
+
+
 def get_symbol_url(symbol_nf, symbol_sx):
-    last_weekday_date = get_last_weekday_date(symbol_nf)
-    if last_weekday_date is None:
-        last_weekday_date = get_last_weekday_date(symbol_sx)
+    symbol_date = process_symbols(symbol_nf)
+    if symbol_date is None:
+        symbol_date = process_symbols(symbol_sx)
+    if symbol_date is None:
+        last_weekday_date = get_last_weekday_date(symbol_nf)
+        if last_weekday_date is None:
+            last_weekday_date = get_last_weekday_date(symbol_sx)
+        symbol_date = last_weekday_date.strftime('%d%b%y').upper()
     if 'BANKNIFTY' in symbol_nf:
         symbol_val = 'BANKNIFTY'
     elif 'NIFTY' in symbol_nf:
@@ -550,7 +612,6 @@ def get_symbol_url(symbol_nf, symbol_sx):
         symbol_val = 'BANKNIFTY'
     elif 'NIFTY' in symbol_sx:
         symbol_val = 'NIFTY'
-    symbol_date = last_weekday_date.strftime('%d%b%y').upper()
     return f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForPremium_m_cmpt_curr_tj.php?mode=INTRA&symbol={symbol_val}-{symbol_date}&timeframe=1min&u={user}&sid={sid}"
 
 if __name__ == '__main__':
