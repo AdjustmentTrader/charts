@@ -385,6 +385,7 @@ def index_ironfly():
         url_if = (f"{base_url}?mode={mode}&symbol={symbols2}&timeframe={timeframe}&u={user}&sid={sid}"
                f"&q1={q1_2}&q2={q2_2}&q3={q3_2}&q4={q4_2}")
         data_cal = fetch_data(url_if)
+        print(url_if)
         data_future = fetch_data(get_symbol_url(symbols2, symbols2))
         if data_cal and data_future:
             df_cal = parse_data_cal(data_cal)
@@ -589,14 +590,16 @@ def process_symbols(symbols):
         last_weekday = get_last_weekday_date(symbol)
         if last_weekday:
             # Format the date to uppercase '26JUN2024'
-            formatted_date = last_weekday.strftime('%d%b%Y').upper()
-            print(f"{symbol}: Last weekday is {formatted_date}")
+            formatted_date = last_weekday.strftime('%d%b%y').upper()
+            return formatted_date
         else:
             print(f"{symbol}: Could not extract date.")
 
 
 def get_symbol_url(symbol_nf, symbol_sx):
+    print(symbol_nf)
     symbol_date = process_symbols(symbol_nf)
+    print(symbol_date)
     if symbol_date is None:
         symbol_date = process_symbols(symbol_sx)
     if symbol_date is None:
