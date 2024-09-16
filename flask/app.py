@@ -273,6 +273,7 @@ def index():
         data_nf = fetch_data(nifty_url)
         data_sx = fetch_data(sensex_url)
         print(get_symbol_url(symbol_nf, symbol_sx))
+        response = None
         data_future = fetch_data(get_symbol_url(symbol_nf, symbol_sx))
         if data_nf and data_sx and data_future:
             print("success")
