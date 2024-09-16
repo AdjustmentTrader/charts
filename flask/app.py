@@ -96,53 +96,50 @@ def downsample_data(df, freq):
     df_downsampled = df.resample(freq, on='DateTime').last().dropna().reset_index()
     return df_downsampled
 
+
 def plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date):
-    fig, ax1 = plt.subplots(figsize=(16, 8))
+    # Convert 'DateTime' to datetime if not already
+    df_merged['DateTime'] = pd.to_datetime(df_merged['DateTime'])
     
-    if not df_merged.empty:
-        # Plot NIFTY data on the primary y-axis
-        ax1.plot(df_merged['DateTime'], df_merged['Value_NF'], label=f'{symbol_nf}', color='blue', linewidth=2, marker='o')
-        ax1.plot(df_merged['DateTime'], df_merged['Value_SX'], label=f'{symbol_sx}', color='red', linewidth=2, marker='o')
-        ax1.plot(df_merged['DateTime'], df_merged['Difference'], label='Difference', color='green', linewidth=2, linestyle='--')
-
-        # Annotate each point with its value
-        for i, row in df_merged.iterrows():
-            ax1.text(row['DateTime'], row['Value_NF'], f'{row["Value_NF"]:.2f}', color='blue', fontsize=8, ha='right', va='bottom')
-            ax1.text(row['DateTime'], row['Value_SX'], f'{row["Value_SX"]:.2f}', color='red', fontsize=8, ha='right', va='bottom')
-            ax1.text(row['DateTime'], row['Difference'], f'{row["Difference"]:.2f}', color='green', fontsize=8, ha='right', va='bottom')
-
+    # Extract unique dates from the DataFrame
+    unique_dates = df_merged['DateTime'].dt.date.unique()
+    
+    # Define the number of rows and columns for subplots
+    num_dates = len(unique_dates)
+    num_cols = 1  # One column
+    num_rows = num_dates  # Each date gets its own row
+    
+    fig, axs = plt.subplots(num_rows, num_cols, figsize=(16, num_rows * 8), squeeze=False)
+    
+    for idx, date in enumerate(unique_dates):
+        ax = axs[idx, 0]
+        df_date = df_merged[df_merged['DateTime'].dt.date == date]
+        
+        # Plot data for each date
+        ax.plot(df_date['DateTime'], df_date['Value_NF'], label=f'{symbol_nf}', color='blue', linewidth=2, marker='o')
+        ax.plot(df_date['DateTime'], df_date['Value_SX'], label=f'{symbol_sx}', color='red', linewidth=2, marker='o')
+        ax.plot(df_date['DateTime'], df_date['Difference'], label='Difference', color='green', linewidth=2, linestyle='--')
+        
+        # Annotate each point
+        for _, row in df_date.iterrows():
+            ax.text(row['DateTime'], row['Value_NF'], f'{row["Value_NF"]:.2f}', color='blue', fontsize=8, ha='right', va='bottom')
+            ax.text(row['DateTime'], row['Value_SX'], f'{row["Value_SX"]:.2f}', color='red', fontsize=8, ha='right', va='bottom')
+            ax.text(row['DateTime'], row['Difference'], f'{row["Difference"]:.2f}', color='green', fontsize=8, ha='center', va='bottom')
+        
         # Highlight sections where Difference is increasing
-        highlight = df_merged['Difference_Increasing']
-        plt.fill_between(df_merged['DateTime'], df_merged['Value_NF'].min(), df_merged['Value_NF'].max(),
+        highlight = df_date['Difference_Increasing']
+        ax.fill_between(df_date['DateTime'], df_date['Value_NF'].min(), df_date['Value_NF'].max(),
                         where=highlight,
                         color='green', alpha=0.3, label='Increasing Difference Highlight')
         
-        ax1.set_xlabel('DateTime')
-        ax1.set_ylabel('Value')
-        ax1.set_title(f'{symbol_nf} and {symbol_sx} with Difference for {start_date} to {end_date}')
-        ax1.legend(loc='upper left')
-        ax1.grid(True)
-        ax1.tick_params(axis='x', rotation=45)
-
-        # Create a secondary y-axis for FUTURE
-        ax2 = ax1.twinx()
-        ax2.plot(df_merged['DateTime'], df_merged['Value_FUTURE'], label='FUTURE', color='black', linewidth=2, marker='o')
-        
-        # Annotate each point for FUTURE
-        for i, row in df_merged.iterrows():
-            ax2.text(row['DateTime'], row['Value_FUTURE'], f'{row["Value_FUTURE"]:.2f}', color='black', fontsize=8, ha='right', va='bottom')
-
-        ax2.set_ylabel('FUTURE Value', color='black')
-        ax2.tick_params(axis='y', labelcolor='black')
-        
-        # Combine legends from both y-axes
-        lines1, labels1 = ax1.get_legend_handles_labels()
-        lines2, labels2 = ax2.get_legend_handles_labels()
-        ax1.legend(lines1 + lines2, labels1 + labels2, loc=(0.5, 0.5), fontsize='small', frameon=True)
-
-        plt.tight_layout()
-    else:
-        print("DataFrame is empty. No data to plot.")
+        ax.set_title(f'{date}')
+        ax.set_xlabel('DateTime')
+        ax.set_ylabel('Value')
+        ax.grid(True)
+        ax.tick_params(axis='x', rotation=45)
+        ax.legend(loc='upper left')
+    
+    plt.tight_layout()
     
     # Save plot to BytesIO object and return it
     img = BytesIO()
@@ -152,46 +149,61 @@ def plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date):
     return img
 
 def plot_data_cal_if(df_merged, symbol_nf, symbol_sx, start_date, end_date):
-    fig, ax1 = plt.subplots(figsize=(16, 8))
+    # Convert 'DateTime' to datetime if not already
+    df_merged['DateTime'] = pd.to_datetime(df_merged['DateTime'])
     
-    if not df_merged.empty:
-        # Plot NIFTY data on the primary y-axis
-        ax1.plot(df_merged['DateTime'], df_merged['Value_CAL'], label=f'{symbol_nf}', color='blue', linewidth=2, marker='o')
-        ax1.plot(df_merged['DateTime'], df_merged['Value_IF'], label=f'{symbol_sx}', color='red', linewidth=2, marker='o')
-        ax1.plot(df_merged['DateTime'], df_merged['Difference'], label='Profit and Loss', color='green', linewidth=2, linestyle='--')
-
-        # Annotate each point with its value
-        for i, row in df_merged.iterrows():
-            ax1.text(row['DateTime'], row['Value_CAL'], f'{row["Value_CAL"]:.2f}', color='blue', fontsize=8, ha='right', va='bottom')
-            ax1.text(row['DateTime'], row['Value_IF'], f'{row["Value_IF"]:.2f}', color='red', fontsize=8, ha='right', va='bottom')
-            ax1.text(row['DateTime'], row['Difference'], f'{row["Difference"]:.2f}', color='green', fontsize=8, ha='right', va='bottom')
-
-        ax1.set_xlabel('DateTime')
-        ax1.set_ylabel('Value')
-        ax1.set_title(f'{symbol_nf} and {symbol_sx} with Difference for {start_date} to {end_date}')
-        ax1.legend(loc='upper left')
-        ax1.grid(True)
-        ax1.tick_params(axis='x', rotation=45)
-
+    # Extract unique dates from the DataFrame
+    unique_dates = df_merged['DateTime'].dt.date.unique()
+    
+    # Define the number of rows and columns for subplots
+    num_dates = len(unique_dates)
+    num_cols = 1  # One column
+    num_rows = num_dates  # Each date gets its own row
+    
+    fig, axs = plt.subplots(num_rows, num_cols, figsize=(16, num_rows * 8), squeeze=False)
+    
+    for idx, date in enumerate(unique_dates):
+        ax = axs[idx, 0]
+        df_date = df_merged[df_merged['DateTime'].dt.date == date]
+        
+        # Plot data for each date
+        ax.plot(df_date['DateTime'], df_date['Value_CAL'], label=f'{symbol_nf}', color='blue', linewidth=2, marker='o')
+        ax.plot(df_date['DateTime'], df_date['Value_IF'], label=f'{symbol_sx}', color='red', linewidth=2, marker='o')
+        ax.plot(df_date['DateTime'], df_date['Difference'], label='Profit and Loss', color='green', linewidth=2, linestyle='--')
+        
+        # Annotate each point
+        for _, row in df_date.iterrows():
+            ax.text(row['DateTime'], row['Value_CAL'], f'{row["Value_CAL"]:.2f}', color='blue', fontsize=8, ha='right', va='bottom')
+            ax.text(row['DateTime'], row['Value_IF'], f'{row["Value_IF"]:.2f}', color='red', fontsize=8, ha='right', va='bottom')
+            ax.text(row['DateTime'], row['Difference'], f'{row["Difference"]:.2f}', color='green', fontsize=8, ha='right', va='bottom')
+        
         # Create a secondary y-axis for FUTURE
-        ax2 = ax1.twinx()
-        ax2.plot(df_merged['DateTime'], df_merged['Value_FUTURE'], label='FUTURE', color='black', linewidth=2, marker='o')
+        ax2 = ax.twinx()
+        ax2.plot(df_date['DateTime'], df_date['Value_FUTURE'], label='FUTURE', color='black', linewidth=2, marker='o')
         
         # Annotate each point for FUTURE
-        for i, row in df_merged.iterrows():
+        for _, row in df_date.iterrows():
             ax2.text(row['DateTime'], row['Value_FUTURE'], f'{row["Value_FUTURE"]:.2f}', color='black', fontsize=8, ha='right', va='bottom')
 
+        ax.set_title(f'{date}')
+        ax.set_xlabel('DateTime')
+        ax.set_ylabel('Value')
         ax2.set_ylabel('FUTURE Value', color='black')
         ax2.tick_params(axis='y', labelcolor='black')
         
+        ax.grid(True)
+        ax.tick_params(axis='x', rotation=45)
+        
         # Combine legends from both y-axes
-        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines1, labels1 = ax.get_legend_handles_labels()
         lines2, labels2 = ax2.get_legend_handles_labels()
-        ax1.legend(lines1 + lines2, labels1 + labels2, loc=(0.5, 0.5), fontsize='small', frameon=True)
-
-        plt.tight_layout()
-    else:
-        print("DataFrame is empty. No data to plot.")
+        ax.legend(lines1 + lines2, labels1 + labels2, loc='upper left', fontsize='small', frameon=True)
+    
+    # Remove any unused subplots
+    for idx in range(num_dates, len(axs)):
+        fig.delaxes(axs[idx, 0])
+    
+    plt.tight_layout()
     
     # Save plot to BytesIO object and return it
     img = BytesIO()
@@ -201,41 +213,57 @@ def plot_data_cal_if(df_merged, symbol_nf, symbol_sx, start_date, end_date):
     return img
 
 def plot_data_doublcal(df_merged, symbol_nf, start_date, end_date):
-    fig, ax1 = plt.subplots(figsize=(16, 8))
+    # Convert 'DateTime' to datetime if not already
+    df_merged['DateTime'] = pd.to_datetime(df_merged['DateTime'])
     
-    if not df_merged.empty:
-        # Plot NIFTY data on the primary y-axis
-        ax1.plot(df_merged['DateTime'], df_merged['Value_CAL'], label=f'{symbol_nf}', color='blue', linewidth=2, marker='o')
-        # Annotate each point with its value
-        for i, row in df_merged.iterrows():
-            ax1.text(row['DateTime'], row['Value_CAL'], f'{row["Value_CAL"]:.2f}', color='blue', fontsize=8, ha='right', va='bottom')
-
-        ax1.set_xlabel('DateTime')
-        ax1.set_ylabel('Value')
-        ax1.set_title(f'{symbol_nf}  for {start_date} to {end_date}')
-        ax1.legend(loc='upper left')
-        ax1.grid(True)
-        ax1.tick_params(axis='x', rotation=45)
-
+    # Extract unique dates from the DataFrame
+    unique_dates = df_merged['DateTime'].dt.date.unique()
+    
+    # Define the number of rows and columns for subplots
+    num_dates = len(unique_dates)
+    num_cols = 1  # One column
+    num_rows = num_dates  # Each date gets its own row
+    
+    fig, axs = plt.subplots(num_rows, num_cols, figsize=(16, num_rows * 8), squeeze=False)
+    
+    for idx, date in enumerate(unique_dates):
+        ax = axs[idx, 0]
+        df_date = df_merged[df_merged['DateTime'].dt.date == date]
+        
+        # Plot data for each date
+        ax.plot(df_date['DateTime'], df_date['Value_CAL'], label=f'{symbol_nf}', color='blue', linewidth=2, marker='o')
+        
+        # Annotate each point
+        for _, row in df_date.iterrows():
+            ax.text(row['DateTime'], row['Value_CAL'], f'{row["Value_CAL"]:.2f}', color='blue', fontsize=8, ha='right', va='bottom')
+        
         # Create a secondary y-axis for FUTURE
-        ax2 = ax1.twinx()
-        ax2.plot(df_merged['DateTime'], df_merged['Value_FUTURE'], label='FUTURE', color='black', linewidth=2, marker='o')
+        ax2 = ax.twinx()
+        ax2.plot(df_date['DateTime'], df_date['Value_FUTURE'], label='FUTURE', color='black', linewidth=2, marker='o')
         
         # Annotate each point for FUTURE
-        for i, row in df_merged.iterrows():
+        for _, row in df_date.iterrows():
             ax2.text(row['DateTime'], row['Value_FUTURE'], f'{row["Value_FUTURE"]:.2f}', color='black', fontsize=8, ha='right', va='bottom')
 
+        ax.set_title(f'{date}')
+        ax.set_xlabel('DateTime')
+        ax.set_ylabel('Value')
         ax2.set_ylabel('FUTURE Value', color='black')
         ax2.tick_params(axis='y', labelcolor='black')
         
+        ax.grid(True)
+        ax.tick_params(axis='x', rotation=45)
+        
         # Combine legends from both y-axes
-        lines1, labels1 = ax1.get_legend_handles_labels()
+        lines1, labels1 = ax.get_legend_handles_labels()
         lines2, labels2 = ax2.get_legend_handles_labels()
-        ax1.legend(lines1 + lines2, labels1 + labels2, loc=(0.5, 0.5), fontsize='small', frameon=True)
-
-        plt.tight_layout()
-    else:
-        print("DataFrame is empty. No data to plot.")
+        ax.legend(lines1 + lines2, labels1 + labels2, loc='upper left', fontsize='small', frameon=True)
+    
+    # Remove any unused subplots
+    for idx in range(num_dates, len(axs)):
+        fig.delaxes(axs[idx, 0])
+    
+    plt.tight_layout()
     
     # Save plot to BytesIO object and return it
     img = BytesIO()
@@ -243,6 +271,7 @@ def plot_data_doublcal(df_merged, symbol_nf, start_date, end_date):
     img.seek(0)
     plt.close()
     return img
+
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
