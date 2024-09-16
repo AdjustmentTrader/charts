@@ -263,6 +263,8 @@ def index():
             # Check current time
             current_time = datetime.now().time()
             is_in_time_range = dt_time(9, 15) <= current_time <= dt_time(23, 55)
+            print("before")
+            print(is_in_time_range)
         except Exception as err:
             print("Exception checking date/time:", err)
             is_today, is_in_time_range = True, True
