@@ -264,8 +264,9 @@ def index():
             current_time = datetime.now().time()
             is_in_time_range = dt_time(9, 15) <= current_time <= dt_time(23, 55)
         except Exception as err:
-            print("today expection")
+            print("Exception checking date/time:", err)
             is_today, is_in_time_range = True, True
+
         # Construct URLs with conditional latestData parameter
         if is_today and is_in_time_range:
             nifty_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
@@ -275,40 +276,46 @@ def index():
             sensex_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}"
         print(nifty_url)
         print(sensex_url)
+
+        # Fetch data from URLs
         data_nf = fetch_data(nifty_url)
         data_sx = fetch_data(sensex_url)
-        print(get_symbol_url(symbol_nf, symbol_sx))
         data_future = fetch_data(get_symbol_url(symbol_nf, symbol_sx))
+
         if data_nf and data_sx and data_future:
+            # Parse and process data
             df_nf = parse_data(data_nf)
             df_sx = parse_data(data_sx)
             df_future = parse_data(data_future)
+
             df_nf_downsampled = downsample_data(df_nf, resample_freq)
             df_sx_downsampled = downsample_data(df_sx, resample_freq)
             df_future_downsampled = downsample_data(df_future, resample_freq)
+
             # Merge the data on 'DateTime' column
             df_merged = pd.merge(df_nf_downsampled, df_sx_downsampled, on='DateTime', suffixes=('_NF', '_SX'))
-            pd.set_option('display.max_rows', None)  # Display all rows
-            pd.set_option('display.max_columns', None)  # Display all columns
+            pd.set_option('display.max_rows', None)
+            pd.set_option('display.max_columns', None)
             df_merged = pd.merge(df_merged, df_future_downsampled, on='DateTime')
             df_merged.rename(columns={'Value': 'Value_FUTURE'}, inplace=True)
             df_merged = df_merged[(df_merged['DateTime'] >= start_date) & (df_merged['DateTime'] <= end_date)]
             df_merged['Difference'] = df_merged['Value_NF'] - df_merged['Value_SX']
-            # Calculate the increase in Difference
-            #df_merged['Difference_Increasing'] = df_merged['Difference'].diff().fillna(0) > 0 & (df_merged['Difference'] > 20)
             df_merged['Difference_Increasing'] = df_merged.index.map(lambda idx: check_difference_increase(idx, df_merged))
+
             img = plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date)
+            
             try:
                 last_value = df_merged['Difference_Increasing'].iloc[-1]
                 response = Response(img, mimetype='image/png')
-                # Add the variables to the headers
                 response.headers['X-Last-Value'] = str(last_value)
-            except:
-                print("DataFrame is empty. last_value")
+            except Exception as err:
+                print("Error generating response:", err)
+                return "DataFrame is empty or an error occurred.", 500
+
             return response
         else:
-            return "Error fetching data."
-    
+            return "Error fetching data.", 500
+
     return render_template('index.html')
 
 def check_difference_increase(row_index, df):
