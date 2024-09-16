@@ -269,6 +269,7 @@ def index():
             nifty_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}"
             sensex_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}"
         print(nifty_url)
+        print(sensex_url)
         data_nf = fetch_data(nifty_url)
         data_sx = fetch_data(sensex_url)
         print(get_symbol_url(symbol_nf, symbol_sx))
