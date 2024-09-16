@@ -13,7 +13,39 @@
                 url: url,
                 type: 'POST',
                 data: $(formId).serialize(),
-                success: function(response) {
+                success: function(response, status, xhr) {
+                    const lastValue = xhr.getResponseHeader('X-Last-Value');
+                    console.log('Last Value:', lastValue);
+                    if (lastValue === 'True' || lastValue === true) {
+                        const serializedData = $(formId).serialize();
+                        console.log('Serialized Form Data:', serializedData);
+                        // Convert serialized data to an object
+                        const formDataObject = {};
+                        serializedData.split('&').forEach(function(pair) {
+                            const [key, value] = pair.split('=');
+                            formDataObject[decodeURIComponent(key)] = decodeURIComponent(value);
+                        });
+                        console.log('Form Data Object:', formDataObject);
+
+                        // Access individual values from the object
+                        const symbol1 = formDataObject['symbol_nf'];
+                        const symbol2 = formDataObject['symbol_sx'];
+                        const startDate = formDataObject['start_date'];
+                        const endDate = formDataObject['end_date'];
+                        const resampleFreq = formDataObject['resample_freq'];
+                        const enable_alert = formDataObject['enable_alert'];
+                        const chatId = formDataObject['chatId'];
+                        const botToken = formDataObject['botToken'];
+
+                        console.log('Symbol 1:', symbol1);
+                        console.log('Symbol 2:', symbol2);
+                        console.log('Start Date:', startDate);
+                        console.log('End Date:', endDate);
+                        console.log('Resample Frequency:', resampleFreq);
+                        if(enable_alert){
+                            sendAlertToTelegram(symbol1, symbol2, startDate, endDate, resampleFreq, chatId, botToken);
+                        }
+                    }
                     var imgBlob = new Blob([response], { type: 'image/png' });
                     var imgUrl = URL.createObjectURL(imgBlob);
                     $(imgId).attr('src', imgUrl);
@@ -27,6 +59,26 @@
             });
         }
 
+        function sendAlertToTelegram(symbol1, symbol2, startDate, endDate, resampleFreq, chatId, botToken) {
+            //const chatId = '1161971259'; // Replace with your Telegram chat ID
+            //const botToken = '7293565324:AAFi_BVJ2c1CBQlEDTytkKRXV39KJnB7gAM'; // Replace with your Telegram bot token
+            const message = `Alert set for ${symbol1} and ${symbol2} from ${startDate} to ${endDate} with resample frequency ${resampleFreq}.`;
+            // Sending alert to Telegram
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ok) {
+                        console.log('Alert sent to Telegram successfully!');
+                    } else {
+                        console.log('Failed to send alert to Telegram.');
+                    }
+                })
+                .catch(error => {
+                    alert('Error sending alert to Telegram.');
+                    console.error(error);
+                });
+        }
+    
         function onTabChange(event) {
             var selectedTab = '#' + event.target.value;
             $('.tab-content').hide(); // Hide all tabs
@@ -342,7 +394,16 @@
                     
                     <label for="resample_freq">Resample Frequency:</label>
                     <input type="text" id="resample_freq" name="resample_freq" value="15T" placeholder="15T">
-                    
+
+                    <div>
+                        <input type="checkbox" id="enable_alert" name="enable_alert">
+                        <label for="enable_alert">Enable Alert</label>
+                        <input type="text" id="chatId" name="chatId" placeholder="1161971259">
+                        <label for="enable_alert">chatId</label>
+                        <input type="text" id="botToken" name="botToken" placeholder="7293565324:AAFi_BVJ2c1CBQlEDTytkKRXV39KJnB7gAM">
+                        <label for="enable_alert">botToken</label>
+                    </div>
+
                     <input type="submit" value="Fetch Data">
                 </fieldset>
             </form>
