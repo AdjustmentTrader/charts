@@ -96,6 +96,7 @@ def downsample_data(df, freq):
     df_downsampled = df.resample(freq, on='DateTime').last().dropna().reset_index()
     return df_downsampled
 
+
 def plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date):
     # Convert 'DateTime' to datetime if not already
     df_merged['DateTime'] = pd.to_datetime(df_merged['DateTime'])
@@ -125,12 +126,12 @@ def plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date):
         
         # Annotate each point for FUTURE
         for _, row in df_date.iterrows():
-            ax2.text(row['DateTime'], row['Value_FUTURE'], f'{row["Value_FUTURE"]:.2f}', color='black', fontsize=8, ha='right', va='bottom')
+            ax2.text(row['DateTime'], row['Value_FUTURE'], f'{row["Value_FUTURE"]:.2f}', color='black', fontsize=8, ha='center', va='bottom')
         
         # Annotate each point
         for _, row in df_date.iterrows():
-            ax.text(row['DateTime'], row['Value_NF'], f'{row["Value_NF"]:.2f}', color='blue', fontsize=8, ha='right', va='bottom')
-            ax.text(row['DateTime'], row['Value_SX'], f'{row["Value_SX"]:.2f}', color='red', fontsize=8, ha='right', va='bottom')
+            ax.text(row['DateTime'], row['Value_NF'], f'{row["Value_NF"]:.2f}', color='blue', fontsize=8, ha='center', va='bottom')
+            ax.text(row['DateTime'], row['Value_SX'], f'{row["Value_SX"]:.2f}', color='red', fontsize=8, ha='center', va='bottom')
             ax.text(row['DateTime'], row['Difference'], f'{row["Difference"]:.2f}', color='green', fontsize=8, ha='center', va='bottom')
         
         # Highlight sections where Difference is increasing
@@ -161,6 +162,7 @@ def plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date):
     plt.close()
     return img
 
+
 def plot_data_cal_if(df_merged, symbol_nf, symbol_sx, start_date, end_date):
     # Convert 'DateTime' to datetime if not already
     df_merged['DateTime'] = pd.to_datetime(df_merged['DateTime'])
@@ -186,9 +188,9 @@ def plot_data_cal_if(df_merged, symbol_nf, symbol_sx, start_date, end_date):
         
         # Annotate each point
         for _, row in df_date.iterrows():
-            ax.text(row['DateTime'], row['Value_CAL'], f'{row["Value_CAL"]:.2f}', color='blue', fontsize=8, ha='right', va='bottom')
-            ax.text(row['DateTime'], row['Value_IF'], f'{row["Value_IF"]:.2f}', color='red', fontsize=8, ha='right', va='bottom')
-            ax.text(row['DateTime'], row['Difference'], f'{row["Difference"]:.2f}', color='green', fontsize=8, ha='right', va='bottom')
+            ax.text(row['DateTime'], row['Value_CAL'], f'{row["Value_CAL"]:.2f}', color='blue', fontsize=8, ha='center', va='bottom')
+            ax.text(row['DateTime'], row['Value_IF'], f'{row["Value_IF"]:.2f}', color='red', fontsize=8, ha='center', va='bottom')
+            ax.text(row['DateTime'], row['Difference'], f'{row["Difference"]:.2f}', color='green', fontsize=8, ha='center', va='bottom')
         
         # Create a secondary y-axis for FUTURE
         ax2 = ax.twinx()
@@ -196,7 +198,7 @@ def plot_data_cal_if(df_merged, symbol_nf, symbol_sx, start_date, end_date):
         
         # Annotate each point for FUTURE
         for _, row in df_date.iterrows():
-            ax2.text(row['DateTime'], row['Value_FUTURE'], f'{row["Value_FUTURE"]:.2f}', color='black', fontsize=8, ha='right', va='bottom')
+            ax2.text(row['DateTime'], row['Value_FUTURE'], f'{row["Value_FUTURE"]:.2f}', color='black', fontsize=8, ha='center', va='bottom')
 
         ax.set_title(f'{date}')
         ax.set_xlabel('DateTime')
@@ -248,7 +250,7 @@ def plot_data_doublcal(df_merged, symbol_nf, start_date, end_date):
         
         # Annotate each point
         for _, row in df_date.iterrows():
-            ax.text(row['DateTime'], row['Value_CAL'], f'{row["Value_CAL"]:.2f}', color='blue', fontsize=8, ha='right', va='bottom')
+            ax.text(row['DateTime'], row['Value_CAL'], f'{row["Value_CAL"]:.2f}', color='blue', fontsize=8, ha='center', va='bottom')
         
         # Create a secondary y-axis for FUTURE
         ax2 = ax.twinx()
@@ -256,7 +258,7 @@ def plot_data_doublcal(df_merged, symbol_nf, start_date, end_date):
         
         # Annotate each point for FUTURE
         for _, row in df_date.iterrows():
-            ax2.text(row['DateTime'], row['Value_FUTURE'], f'{row["Value_FUTURE"]:.2f}', color='black', fontsize=8, ha='right', va='bottom')
+            ax2.text(row['DateTime'], row['Value_FUTURE'], f'{row["Value_FUTURE"]:.2f}', color='black', fontsize=8, ha='center', va='bottom')
 
         ax.set_title(f'{date}')
         ax.set_xlabel('DateTime')
