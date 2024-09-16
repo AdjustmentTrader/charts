@@ -259,7 +259,7 @@ def index():
 
         # Check current time
         current_time = datetime.now().time()
-        is_in_time_range = dt_time(13, 45) <= current_time <= dt_time(23, 55)
+        is_in_time_range = dt_time(09, 15) <= current_time <= dt_time(23, 55)
 
         # Construct URLs with conditional latestData parameter
         if is_today and is_in_time_range:
@@ -275,7 +275,6 @@ def index():
         print(get_symbol_url(symbol_nf, symbol_sx))
         data_future = fetch_data(get_symbol_url(symbol_nf, symbol_sx))
         if data_nf and data_sx and data_future:
-            print("success")
             df_nf = parse_data(data_nf)
             df_sx = parse_data(data_sx)
             df_future = parse_data(data_future)
@@ -294,7 +293,18 @@ def index():
             #df_merged['Difference_Increasing'] = df_merged['Difference'].diff().fillna(0) > 0 & (df_merged['Difference'] > 20)
             df_merged['Difference_Increasing'] = df_merged.index.map(lambda idx: check_difference_increase(idx, df_merged))
             img = plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date)
-    return Response(img, mimetype='image/png')
+            try:
+                last_value = df_merged['Difference_Increasing'].iloc[-1]
+                response = Response(img, mimetype='image/png')
+                # Add the variables to the headers
+                response.headers['X-Last-Value'] = str(last_value)
+            except:
+                print("DataFrame is empty. last_value")
+            return response
+        else:
+            return "Error fetching data."
+    
+    return render_template('index.html')
 
 def check_difference_increase(row_index, df):
                 current_diff = df.loc[row_index, 'Difference']
