@@ -254,15 +254,18 @@ def index():
         resample_freq = request.form.get('resample_freq', '15T')  # Default to '15T' if not provided
 
         # Check if start_date is today
-        today = datetime.now().date()
-        print(today)
-        print(datetime.strptime(start_date, '%Y-%m-%d').date())
-        is_today = datetime.strptime(start_date, '%Y-%m-%d').date() == today
-        print(is_today)
-        # Check current time
-        current_time = datetime.now().time()
-        is_in_time_range = dt_time(9, 15) <= current_time <= dt_time(23, 55)
-
+        try:
+            today = datetime.now().date()
+            print(today)
+            print(datetime.strptime(start_date, '%Y-%m-%d').date())
+            is_today = datetime.strptime(start_date, '%Y-%m-%d').date() == today
+            print(is_today)
+            # Check current time
+            current_time = datetime.now().time()
+            is_in_time_range = dt_time(9, 15) <= current_time <= dt_time(23, 55)
+        except:
+            print("today expection")
+            is_today, is_in_time_range = True, True
         # Construct URLs with conditional latestData parameter
         if is_today and is_in_time_range:
             nifty_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
