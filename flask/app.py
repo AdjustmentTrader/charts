@@ -96,7 +96,6 @@ def downsample_data(df, freq):
     df_downsampled = df.resample(freq, on='DateTime').last().dropna().reset_index()
     return df_downsampled
 
-
 def plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date):
     # Convert 'DateTime' to datetime if not already
     df_merged['DateTime'] = pd.to_datetime(df_merged['DateTime'])
@@ -120,6 +119,14 @@ def plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date):
         ax.plot(df_date['DateTime'], df_date['Value_SX'], label=f'{symbol_sx}', color='red', linewidth=2, marker='o')
         ax.plot(df_date['DateTime'], df_date['Difference'], label='Difference', color='green', linewidth=2, linestyle='--')
         
+        # Create a secondary y-axis for FUTURE
+        ax2 = ax.twinx()
+        ax2.plot(df_date['DateTime'], df_date['Value_FUTURE'], label='FUTURE', color='black', linewidth=2, marker='o')
+        
+        # Annotate each point for FUTURE
+        for _, row in df_date.iterrows():
+            ax2.text(row['DateTime'], row['Value_FUTURE'], f'{row["Value_FUTURE"]:.2f}', color='black', fontsize=8, ha='right', va='bottom')
+        
         # Annotate each point
         for _, row in df_date.iterrows():
             ax.text(row['DateTime'], row['Value_NF'], f'{row["Value_NF"]:.2f}', color='blue', fontsize=8, ha='right', va='bottom')
@@ -135,9 +142,15 @@ def plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date):
         ax.set_title(f'{date}')
         ax.set_xlabel('DateTime')
         ax.set_ylabel('Value')
+        ax2.set_ylabel('FUTURE Value', color='black')
+        ax2.tick_params(axis='y', labelcolor='black')
         ax.grid(True)
         ax.tick_params(axis='x', rotation=45)
-        ax.legend(loc='upper left')
+        
+        # Combine legends from both y-axes
+        lines1, labels1 = ax.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
     
     plt.tight_layout()
     
