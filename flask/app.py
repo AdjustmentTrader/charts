@@ -151,7 +151,7 @@ def plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date):
         # Combine legends from both y-axes
         lines1, labels1 = ax.get_legend_handles_labels()
         lines2, labels2 = ax2.get_legend_handles_labels()
-        ax.legend(lines1 + lines2, labels1 + labels2, loc='upper left')
+        ax.legend(lines1 + lines2, labels1 + labels2, loc='center')
     
     plt.tight_layout()
     
@@ -212,7 +212,7 @@ def plot_data_cal_if(df_merged, symbol_nf, symbol_sx, start_date, end_date):
         # Combine legends from both y-axes
         lines1, labels1 = ax.get_legend_handles_labels()
         lines2, labels2 = ax2.get_legend_handles_labels()
-        ax.legend(lines1 + lines2, labels1 + labels2, loc='upper left', fontsize='small', frameon=True)
+        ax.legend(lines1 + lines2, labels1 + labels2, loc='center', fontsize='small', frameon=True)
     
     # Remove any unused subplots
     for idx in range(num_dates, len(axs)):
@@ -272,7 +272,7 @@ def plot_data_doublcal(df_merged, symbol_nf, start_date, end_date):
         # Combine legends from both y-axes
         lines1, labels1 = ax.get_legend_handles_labels()
         lines2, labels2 = ax2.get_legend_handles_labels()
-        ax.legend(lines1 + lines2, labels1 + labels2, loc='upper left', fontsize='small', frameon=True)
+        ax.legend(lines1 + lines2, labels1 + labels2, loc='center', fontsize='small', frameon=True)
     
     # Remove any unused subplots
     for idx in range(num_dates, len(axs)):
