@@ -255,8 +255,10 @@ def index():
 
         # Check if start_date is today
         today = datetime.now().date()
+        print(today)
+        print(datetime.strptime(start_date, '%Y-%m-%d').date())
         is_today = datetime.strptime(start_date, '%Y-%m-%d').date() == today
-
+        print(is_today)
         # Check current time
         current_time = datetime.now().time()
         is_in_time_range = dt_time(9, 15) <= current_time <= dt_time(23, 55)
