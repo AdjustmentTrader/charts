@@ -263,7 +263,7 @@ def index():
             # Check current time
             current_time = datetime.now().time()
             is_in_time_range = dt_time(9, 15) <= current_time <= dt_time(23, 55)
-        except:
+        except Exception as err:
             print("today expection")
             is_today, is_in_time_range = True, True
         # Construct URLs with conditional latestData parameter
