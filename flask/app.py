@@ -292,10 +292,13 @@ def index():
             #df_merged['Difference_Increasing'] = df_merged['Difference'].diff().fillna(0) > 0 & (df_merged['Difference'] > 20)
             df_merged['Difference_Increasing'] = df_merged.index.map(lambda idx: check_difference_increase(idx, df_merged))
             img = plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date)
-            last_value = df_merged['Difference_Increasing'].iloc[-1]
-            response = Response(img, mimetype='image/png')
-            # Add the variables to the headers
-            response.headers['X-Last-Value'] = str(last_value)
+            try:
+                last_value = df_merged['Difference_Increasing'].iloc[-1]
+                response = Response(img, mimetype='image/png')
+                # Add the variables to the headers
+                response.headers['X-Last-Value'] = str(last_value)
+            except:
+                print("DataFrame is empty. last_value")
             return response
         else:
             return "Error fetching data."
