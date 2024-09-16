@@ -274,6 +274,7 @@ def index():
         print(get_symbol_url(symbol_nf, symbol_sx))
         data_future = fetch_data(get_symbol_url(symbol_nf, symbol_sx))
         if data_nf and data_sx and data_future:
+            print("success")
             df_nf = parse_data(data_nf)
             df_sx = parse_data(data_sx)
             df_future = parse_data(data_future)
