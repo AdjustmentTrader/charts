@@ -259,7 +259,7 @@ def index():
 
         # Check current time
         current_time = datetime.now().time()
-        is_in_time_range = dt_time(09, 15) <= current_time <= dt_time(23, 55)
+        is_in_time_range = dt_time(9, 15) <= current_time <= dt_time(23, 55)
 
         # Construct URLs with conditional latestData parameter
         if is_today and is_in_time_range:
