@@ -394,7 +394,7 @@ def index_cal():
         # Construct the URL
         base_cal = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForDoubleCalendar_beta.php'
         mode = 'INTRA'
-        base_if = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForDoubleCalendar_beta.php'
+        base_if = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForIronButterly_m_curr_atp.php'
         # Assuming you need to format symbols, timeframe, and other parameters
         timeframe = '1min'
         
