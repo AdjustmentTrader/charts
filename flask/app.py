@@ -84,7 +84,7 @@ def parse_data_if(data):
         if len(parts) > 1:
             try:
                 date_time = pd.to_datetime(parts[0], format='%d.%m.%y %H:%M:%S')
-                value = float(parts[1])
+                value = float(parts[-1])
                 dates.append(date_time)
                 values.append(value)
             except ValueError as e:
