@@ -392,16 +392,16 @@ def index_cal():
         resample_freq2 = request.form.get('resample_freq2', '15T')  # Default to '15T' if not provided
 
         # Construct the URL
-        base_url = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForDoubleCalendar_beta.php'
+        base_cal = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForDoubleCalendar_beta.php'
         mode = 'INTRA'
-        
+        base_if = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForDoubleCalendar_beta.php'
         # Assuming you need to format symbols, timeframe, and other parameters
         timeframe = '1min'
         
         # Build the complete URL
-        url_cal = (f"{base_url}?mode={mode}&symbol={symbols1}&timeframe={timeframe}&u={user}&sid={sid}"
+        url_cal = (f"{base_cal}?mode={mode}&symbol={symbols1}&timeframe={timeframe}&u={user}&sid={sid}"
                f"&q1={q1_1}&q2={q2_1}&q3={q3_1}&q4={q4_1}")
-        url_if = (f"{base_url}?mode={mode}&symbol={symbols2}&timeframe={timeframe}&u={user}&sid={sid}"
+        url_if = (f"{base_if}?mode={mode}&symbol={symbols2}&timeframe={timeframe}&u={user}&sid={sid}"
                f"&q1={q1_2}&q2={q2_2}&q3={q3_2}&q4={q4_2}")
         data_cal = fetch_data(url_cal)
         data_if = fetch_data(url_if)
