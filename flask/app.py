@@ -439,7 +439,7 @@ def index_ironfly():
         resample_freq2 = request.form.get('resample_freq2', '15T')  # Default to '15T' if not provided
 
         # Construct the URL
-        base_url = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForDoubleCalendar_beta.php'
+        base_url = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForIronButterly_m_curr_atp.php'
         mode = 'INTRA'
         
         # Assuming you need to format symbols, timeframe, and other parameters
