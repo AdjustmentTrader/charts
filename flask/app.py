@@ -405,6 +405,8 @@ def index_cal():
                f"&q1={q1_2}&q2={q2_2}&q3={q3_2}&q4={q4_2}")
         data_cal = fetch_data(url_cal)
         data_if = fetch_data(url_if)
+        print(url_cal)
+        print(url_if)
         data_future = fetch_data(get_symbol_url(symbols1,symbols2))
         if data_cal and data_if and data_future:
             df_cal = parse_data_cal(data_cal)
@@ -485,6 +487,7 @@ def index_doubleCal():
                f"&q1={q1_1}&q2={q2_1}&q3={q3_1}&q4={q4_1}")
         data_cal = fetch_data(url_cal)
         data_future = fetch_data(get_symbol_url(symbols1, symbols1))
+        print(url_cal)
         if data_cal and data_future:
             df_cal = parse_data_cal(data_cal)
             df_cal_downsampled = downsample_data(df_cal, resample_freq1)
