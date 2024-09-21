@@ -9,6 +9,7 @@ import pandas as pd
 from io import BytesIO
 import datetime
 import yfinance as yf
+from flask import jsonify
 
 app = Flask(__name__)
 
@@ -300,15 +301,11 @@ def index():
         # Check if start_date is today
         try:
             today = datetime.now().date()
-            print(today)
             print(datetime.strptime(start_date, '%Y-%m-%d').date())
             is_today = datetime.strptime(start_date, '%Y-%m-%d').date() == today
-            print(is_today)
             # Check current time
             current_time = datetime.now().time()
             is_in_time_range = dt_time(9, 15) <= current_time <= dt_time(23, 55)
-            print("before")
-            print(is_in_time_range)
         except Exception as err:
             print("Exception checking date/time:", err)
             is_today, is_in_time_range = True, True
@@ -320,8 +317,6 @@ def index():
         else:
             nifty_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}"
             sensex_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}"
-        print(nifty_url)
-        print(sensex_url)
 
         # Fetch data from URLs
         data_nf = fetch_data(nifty_url)
@@ -405,8 +400,6 @@ def index_cal():
                f"&q1={q1_2}&q2={q2_2}&q3={q3_2}&q4={q4_2}")
         data_cal = fetch_data(url_cal)
         data_if = fetch_data(url_if)
-        print(url_cal)
-        print(url_if)
         data_future = fetch_data(get_symbol_url(symbols1,symbols2))
         if data_cal and data_if and data_future:
             df_cal = parse_data_cal(data_cal)
@@ -423,6 +416,7 @@ def index_cal():
             img = plot_data_cal_if(df_merged, symbols1, symbols2, start_date1, end_date1)
 
     return Response(img, mimetype='image/png')
+
 
 
 @app.route('/ironfly', methods=['GET', 'POST'])
@@ -449,7 +443,6 @@ def index_ironfly():
         url_if = (f"{base_url}?mode={mode}&symbol={symbols2}&timeframe={timeframe}&u={user}&sid={sid}"
                f"&q1={q1_2}&q2={q2_2}&q3={q3_2}&q4={q4_2}")
         data_cal = fetch_data(url_if)
-        print(url_if)
         data_future = fetch_data(get_symbol_url(symbols2, symbols2))
         if data_cal and data_future:
             df_cal = parse_data_cal(data_cal)
@@ -462,6 +455,47 @@ def index_ironfly():
             img = plot_data_doublcal(df_merged, symbols2, start_date2, end_date2)
 
     return Response(img, mimetype='image/png')
+
+@app.route('/ironflyPrice', methods=['GET', 'POST'])
+def index_ironflyPrice():
+    if request.method == 'POST':
+        ##second input
+        symbols2 = request.form.get('symbols2')
+        q1_2 = request.form.get('q1_2')
+        q2_2 = request.form.get('q2_2')
+        q3_2 = request.form.get('q3_2')
+        q4_2 = request.form.get('q4_2')
+        start_date2 = request.form.get('start_date2')
+        end_date2 = request.form.get('end_date2')
+        resample_freq2 = request.form.get('resample_freq2', '15T')  # Default to '15T' if not provided
+
+        # Construct the URL
+        base_url = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForIronButterly_m_curr_atp.php'
+        mode = 'INTRA'
+        
+        # Assuming you need to format symbols, timeframe, and other parameters
+        timeframe = '1min'
+        
+        # Build the complete URL
+        url_if = (f"{base_url}?mode={mode}&symbol={symbols2}&timeframe={timeframe}&u={user}&sid={sid}"
+               f"&q1={q1_2}&q2={q2_2}&q3={q3_2}&q4={q4_2}")
+        print(f"ironflyPrice---{url_if}")
+        data_cal = fetch_data(url_if)
+        if data_cal:
+            df_cal = parse_data_cal(data_cal)
+            df_cal_downsampled = downsample_data(df_cal, resample_freq2)
+            df_cal_downsampled = df_cal_downsampled[(df_cal_downsampled['DateTime'] >= start_date2) & (df_cal_downsampled['DateTime'] <= end_date2)]
+            last_three_values = df_cal_downsampled['Value'].tail(3)
+            # Convert to a comma-separated string
+            values_string = ','.join(map(str, last_three_values))
+            first_value = df_cal_downsampled['Value'].iloc[0]  # First value
+            last_value = df_cal_downsampled['Value'].iloc[-1]  # Last value
+            pnl = last_value - first_value  # Calculate P&L
+    
+    return jsonify({
+        'values_string': values_string,
+        'pnl': int(pnl)
+    })
 
 @app.route('/doubleCal', methods=['GET', 'POST'])
 def index_doubleCal():
@@ -487,7 +521,6 @@ def index_doubleCal():
                f"&q1={q1_1}&q2={q2_1}&q3={q3_1}&q4={q4_1}")
         data_cal = fetch_data(url_cal)
         data_future = fetch_data(get_symbol_url(symbols1, symbols1))
-        print(url_cal)
         if data_cal and data_future:
             df_cal = parse_data_cal(data_cal)
             df_cal_downsampled = downsample_data(df_cal, resample_freq1)
@@ -499,6 +532,48 @@ def index_doubleCal():
             img = plot_data_doublcal(df_merged, symbols1, start_date1, end_date1)
 
     return Response(img, mimetype='image/png')
+
+
+@app.route('/doubleCalPrice', methods=['GET', 'POST'])
+def index_doubleCalPrice():
+    if request.method == 'POST':
+        symbols1 = request.form.get('symbols1')
+        q1_1 = request.form.get('q1_1')
+        q2_1 = request.form.get('q2_1')
+        q3_1 = request.form.get('q3_1')
+        q4_1 = request.form.get('q4_1')
+        start_date1 = request.form.get('start_date1')
+        end_date1 = request.form.get('end_date1')
+        resample_freq1 = request.form.get('resample_freq1', '15T')
+
+        # Construct the URL
+        base_url = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForDoubleCalendar_beta.php'
+        mode = 'INTRA'
+        
+        # Assuming you need to format symbols, timeframe, and other parameters
+        timeframe = '1min'
+        
+        # Build the complete URL
+        url_cal = (f"{base_url}?mode={mode}&symbol={symbols1}&timeframe={timeframe}&u={user}&sid={sid}"
+               f"&q1={q1_1}&q2={q2_1}&q3={q3_1}&q4={q4_1}")
+        data_cal = fetch_data(url_cal)
+        print(f"doubleCalPrice---{url_cal}")
+        if data_cal:
+            df_cal = parse_data_cal(data_cal)
+            df_cal_downsampled = downsample_data(df_cal, resample_freq1)
+            df_cal_downsampled = df_cal_downsampled[(df_cal_downsampled['DateTime'] >= start_date1) & (df_cal_downsampled['DateTime'] <= end_date1)]
+            last_three_values = df_cal_downsampled['Value'].tail(3)
+            # Convert to a comma-separated string
+            values_string = ','.join(map(str, last_three_values))
+            first_value = df_cal_downsampled['Value'].iloc[0]  # First value
+            last_value = df_cal_downsampled['Value'].iloc[-1]  # Last value
+            pnl = last_value - first_value  # Calculate P&L
+
+    return jsonify({
+        'values_string': values_string,
+        'pnl': int(pnl)
+    })
+            
 
 @app.route('/spreadchart', methods=['GET', 'POST'])
 def index_spreadchart():
@@ -662,9 +737,7 @@ def process_symbols(symbols):
 
 
 def get_symbol_url(symbol_nf, symbol_sx):
-    print(symbol_nf)
     symbol_date = process_symbols(symbol_nf)
-    print(symbol_date)
     if symbol_date is None:
         symbol_date = process_symbols(symbol_sx)
     if symbol_date is None:
