@@ -312,52 +312,39 @@ function generateStrikePrices(symbolInputId, outputTableId) {
         if (match) {
             return {
                 symbol: match[1],
-                strike: parseInt(match[2]), 
-                type: match[3], 
-                expiry: match[4]
+                strike: parseInt(match[2]),
+                type: match[3],
+                expiry: match[4],
+                original: segment // Preserve the original segment
             };
         }
     }).filter(Boolean); // Remove undefined entries
-
-    // Sort strikes into calls and puts for each expiry date
-    let calls = strikes.filter(s => s.type === 'C');
-    let puts = strikes.filter(s => s.type === 'P');
 
     // Generate output by adjusting strike prices for both calls and puts
     for (let i = -5; i <= 5; i++) {
         let outputRow = [];
 
-        // Collecting call strikes
-        calls.forEach(call => {
-            let stepSize = (call.symbol === 'NIFTY') ? 50 : 100;
-            let newStrike = call.strike + (i * stepSize);
-            outputRow.push(`${call.symbol}-${newStrike}C-${call.expiry}`);
+        // Preserve the input order of calls and puts
+        strikes.forEach(strike => {
+            let stepSize = (strike.symbol === 'NIFTY') ? 50 : 100;
+            let newStrike = strike.strike + (i * stepSize);
+            let newSegment = `${strike.symbol}-${newStrike}${strike.type}-${strike.expiry}`;
+            outputRow.push(newSegment);
         });
 
-        // Collecting put strikes
-        puts.forEach(put => {
-            let stepSize = (put.symbol === 'NIFTY') ? 50 : 100;
-            let newStrike = put.strike + (i * stepSize);
-            outputRow.push(`${put.symbol}-${newStrike}P-${put.expiry}`);
-        });
-
-        // Adjust the order by interleaving calls and puts
-        let orderedRow = [];
-        for (let j = 0; j < Math.max(calls.length, puts.length); j++) {
-            if (calls[j]) orderedRow.push(calls[j].symbol + '-' + (calls[j].strike + (i * (calls[j].symbol === 'NIFTY' ? 50 : 100))) + 'C-' + calls[j].expiry);
-            if (puts[j]) orderedRow.push(puts[j].symbol + '-' + (puts[j].strike + (i * (puts[j].symbol === 'NIFTY' ? 50 : 100))) + 'P-' + puts[j].expiry);
-        }
-
-        // Join the ordered strikes with ':' and add to the output
-        outputRows.push(orderedRow.join(':'));
+        // Join the strikes with ':' and add to the output
+        outputRows.push(outputRow.join(':'));
     }
 
     // Clear the existing table rows
     const tableBody = document.getElementById(outputTableId).getElementsByTagName('tbody')[0];
     tableBody.innerHTML = '';
 
+    // Variable to track the selected row
+    let selectedRowIndex = -1;
+
     // Populate the table with the generated rows
-    outputRows.forEach(rowData => {
+    outputRows.forEach((rowData, index) => {
         let row = tableBody.insertRow();
 
         // Create the first cell for the rowData
@@ -365,17 +352,15 @@ function generateStrikePrices(symbolInputId, outputTableId) {
         cell.className = 'output-row';
         cell.textContent = rowData;
 
-        // Add a new cell for the returned values
-        let returnCell = row.insertCell(1); // Assuming this is the new column
-        let returnCell_1 = row.insertCell(2); // Assuming this is the new column
+        // Add two new cells for the returned values and P&L
+        let returnCell = row.insertCell(1);
+        let returnCell_1 = row.insertCell(2);
 
-        // Call autoStrike and update the new cell with returned values
+        // Call autoStrike and update the new cells with returned values
         autoStrike('#dataForm2', rowData, symbolInputId, function(valuesArray, pnl) {
             returnCell.textContent = valuesArray.join(', '); // Convert array to comma-separated string
-            // Optionally, you can display the P&L value wherever needed
-            returnCell_1.textContent =  pnl; // You can also update some UI element to show the P&L if necessary
+            returnCell_1.textContent = pnl; // Display the P&L value
         });
-        
 
         // Add click event to update input field, highlight row, and trigger an event
         row.onclick = function() {
@@ -391,6 +376,18 @@ function generateStrikePrices(symbolInputId, outputTableId) {
             // Highlight the clicked row
             row.classList.add('selected-row');
         };
-    });
-}
 
+        // Check if this row matches the current input value to select it by default
+        if (input === rowData) {
+            row.classList.add('selected-row');
+            document.getElementById(symbolInputId).value = rowData; // Set input to the selected value
+            selectedRowIndex = index; // Mark as selected
+            console.log('Row auto-selected for ' + symbolInputId); // Debugging log
+        }
+    });
+
+    // Log a message if no matching row is highlighted
+    if (selectedRowIndex === -1) {
+        console.log('No matching row found for ' + symbolInputId); // Debugging log
+    }
+}
