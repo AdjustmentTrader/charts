@@ -78,26 +78,32 @@
                         <label for="symbols1">Symbols: CE BUY WEEKLY - PE BUY WEEKLY - CE SELL NEXT - PE SELL NEXT</label>
                         <input type="text" id="symbols1" name="symbols1" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
                         
-                        <label for="q1_1">Q1:</label>
-                        <input type="number" id="q1_1" name="q1_1" value="2" required>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <label for="q1_1" style="margin: 0; white-space: nowrap;">Q1:</label>
+                            <input type="number" id="q1_1" name="q1_1" value="2" required 
+                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
+                                   onfocus="this.style.borderColor='#007BFF';" 
+                                   onblur="this.style.borderColor='#ccc';">
                         
-                        <label for="q2_1">Q2:</label>
-                        <input type="number" id="q2_1" name="q2_1" value="2" required>
+                            <label for="q2_1" style="margin: 0; white-space: nowrap;">Q2:</label>
+                            <input type="number" id="q2_1" name="q2_1" value="2" required 
+                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
+                                   onfocus="this.style.borderColor='#007BFF';" 
+                                   onblur="this.style.borderColor='#ccc';">
                         
-                        <label for="q3_1">Q3:</label>
-                        <input type="number" id="q3_1" name="q3_1" value="2" required>
+                            <label for="q3_1" style="margin: 0; white-space: nowrap;">Q3:</label>
+                            <input type="number" id="q3_1" name="q3_1" value="2" required 
+                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
+                                   onfocus="this.style.borderColor='#007BFF';" 
+                                   onblur="this.style.borderColor='#ccc';">
                         
-                        <label for="q4_1">Q4:</label>
-                        <input type="number" id="q4_1" name="q4_1" value="2" required>
+                            <label for="q4_1" style="margin: 0; white-space: nowrap;">Q4:</label>
+                            <input type="number" id="q4_1" name="q4_1" value="2" required 
+                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
+                                   onfocus="this.style.borderColor='#007BFF';" 
+                                   onblur="this.style.borderColor='#ccc';">
+                        </div>                        
                         
-                        <label for="start_date1">Start Date:</label>
-                        <input type="date" id="start_date1" name="start_date1" required>
-                        
-                        <label for="end_date1">End Date: should be next day of start_date</label>
-                        <input type="date" id="end_date1" name="end_date1" required>
-                        
-                        <label for="resample_freq1">Resample Frequency:</label>
-                        <input type="text" id="resample_freq1" name="resample_freq1" value="15T">
                     </fieldset>
         
                     <!-- Second Set of Fields: IronButterfly -->
@@ -107,26 +113,42 @@
                         <label for="symbols2">Symbols: CE BUY - CE SELL - PE SELL - PE BUY</label>
                         <input type="text" id="symbols2" name="symbols2" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
                         
-                        <label for="q1_2">Q1:</label>
-                        <input type="number" id="q1_2" name="q1_2" value="1" required>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <label for="q1_2" style="margin: 0; white-space: nowrap;">Q1:</label>
+                            <input type="number" id="q1_2" name="q1_2" value="3" required 
+                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
+                                   onfocus="this.style.borderColor='#007BFF';" 
+                                   onblur="this.style.borderColor='#ccc';">
                         
-                        <label for="q2_2">Q2:</label>
-                        <input type="number" id="q2_2" name="q2_2" value="1" required>
+                            <label for="q2_2" style="margin: 0; white-space: nowrap;">Q2:</label>
+                            <input type="number" id="q2_2" name="q2_2" value="3" required 
+                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
+                                   onfocus="this.style.borderColor='#007BFF';" 
+                                   onblur="this.style.borderColor='#ccc';">
                         
-                        <label for="q3_2">Q3:</label>
-                        <input type="number" id="q3_2" name="q3_2" value="1" required>
+                            <label for="q3_2" style="margin: 0; white-space: nowrap;">Q3:</label>
+                            <input type="number" id="q3_2" name="q3_2" value="3" required 
+                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
+                                   onfocus="this.style.borderColor='#007BFF';" 
+                                   onblur="this.style.borderColor='#ccc';">
                         
-                        <label for="q4_2">Q4:</label>
-                        <input type="number" id="q4_2" name="q4_2" value="1" required>
+                            <label for="q4_2" style="margin: 0; white-space: nowrap;">Q4:</label>
+                            <input type="number" id="q4_2" name="q4_2" value="3" required 
+                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
+                                   onfocus="this.style.borderColor='#007BFF';" 
+                                   onblur="this.style.borderColor='#ccc';">
+                        </div>
                         
-                        <label for="start_date2">Start Date:</label>
-                        <input type="date" id="start_date2" name="start_date2" required>
                         
-                        <label for="end_date2">End Date: should be next day of start_date</label>
-                        <input type="date" id="end_date2" name="end_date2" required>
+                        <label for="start_date1">Start Date:</label>
+                        <input type="date" id="start_date1" name="start_date1" required>
                         
-                        <label for="resample_freq2">Resample Frequency:</label>
-                        <input type="text" id="resample_freq2" name="resample_freq2" value="15T">
+                        <label for="end_date1">End Date: should be next day of start_date</label>
+                        <input type="date" id="end_date1" name="end_date1" required>
+                        
+                        <label for="resample_freq1">Resample Frequency:</label>
+                        <input type="text" id="resample_freq1" name="resample_freq1" value="15T">
+                        
                     </fieldset>
                     
                     <input type="submit" value="Fetch Data">
