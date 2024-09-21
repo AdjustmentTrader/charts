@@ -4,364 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ATM Generator and Plotter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        var currentTab = '#tab1'; // Default to the first tab
-
-        function autoRefreshImage(formId, imgId, url) {
-            $.ajax({
-                url: url,
-                type: 'POST',
-                data: $(formId).serialize(),
-                success: function(response, status, xhr) {
-                    const lastValue = xhr.getResponseHeader('X-Last-Value');
-                    console.log('Last Value:', lastValue);
-                    if (lastValue === 'True' || lastValue === true) {
-                        const serializedData = $(formId).serialize();
-                        console.log('Serialized Form Data:', serializedData);
-                        // Convert serialized data to an object
-                        const formDataObject = {};
-                        serializedData.split('&').forEach(function(pair) {
-                            const [key, value] = pair.split('=');
-                            formDataObject[decodeURIComponent(key)] = decodeURIComponent(value);
-                        });
-                        console.log('Form Data Object:', formDataObject);
-
-                        // Access individual values from the object
-                        const symbol1 = formDataObject['symbol_nf'];
-                        const symbol2 = formDataObject['symbol_sx'];
-                        const startDate = formDataObject['start_date'];
-                        const endDate = formDataObject['end_date'];
-                        const resampleFreq = formDataObject['resample_freq'];
-                        const enable_alert = formDataObject['enable_alert'];
-                        const chatId = formDataObject['chatId'];
-                        const botToken = formDataObject['botToken'];
-
-                        console.log('Symbol 1:', symbol1);
-                        console.log('Symbol 2:', symbol2);
-                        console.log('Start Date:', startDate);
-                        console.log('End Date:', endDate);
-                        console.log('Resample Frequency:', resampleFreq);
-                        if(enable_alert){
-                            sendAlertToTelegram(symbol1, symbol2, startDate, endDate, resampleFreq, chatId, botToken);
-                        }
-                    }
-                    var imgBlob = new Blob([response], { type: 'image/png' });
-                    var imgUrl = URL.createObjectURL(imgBlob);
-                    $(imgId).attr('src', imgUrl);
-                },
-                error: function() {
-                    console.error('Failed to load image');
-                },
-                xhrFields: {
-                    responseType: 'blob'
-                }
-            });
-        }
-
-        function sendAlertToTelegram(symbol1, symbol2, startDate, endDate, resampleFreq, chatId, botToken) {
-            //const chatId = '1161971259'; // Replace with your Telegram chat ID
-            //const botToken = '7293565324:AAFi_BVJ2c1CBQlEDTytkKRXV39KJnB7gAM'; // Replace with your Telegram bot token
-            const message = `Alert set for ${symbol1} and ${symbol2} from ${startDate} to ${endDate} with resample frequency ${resampleFreq}.`;
-            // Sending alert to Telegram
-            fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.ok) {
-                        console.log('Alert sent to Telegram successfully!');
-                    } else {
-                        console.log('Failed to send alert to Telegram.');
-                    }
-                })
-                .catch(error => {
-                    alert('Error sending alert to Telegram.');
-                    console.error(error);
-                });
-        }
-    
-        function onTabChange(event) {
-            var selectedTab = '#' + event.target.value;
-            $('.tab-content').hide(); // Hide all tabs
-            $(selectedTab).show(); // Show the selected tab
-            currentTab = selectedTab; // Update current tab
-            updateSavedDataDropdown(); // Update the saved data dropdown for the current tab
-        }
-
-        setInterval(function() {
-            if ($(currentTab).is(':visible')) {
-                var formId, imgId, url;
-
-                if (currentTab === '#tab1') {
-                    formId = '#dataForm1';
-                    imgId = '#graph-img-tab1';
-                    url = '/';
-                } else if (currentTab === '#tab2') {
-                    formId = '#dataForm2';
-                    imgId = '#graph-img-tab2';
-                    url = '/cal';
-                } else if (currentTab === '#tab3') {
-                    formId = '#dataForm3';
-                    imgId = '#graph-img-tab3';
-                    url = '/trend'; 
-                }else if (currentTab === '#tab4') {
-                    formId = '#dataForm4';
-                    imgId = '#graph-img-tab4';
-                    url = '/doubleCal'; 
-                }else if (currentTab === '#tab5') {
-                    formId = '#dataForm5';
-                    imgId = '#graph-img-tab5';
-                    url = '/ironfly'; 
-                }else if (currentTab === '#tab6') {
-                    formId = '#dataForm6';
-                    imgId = '#graph-img-tab6';
-                    url = '/spreadchart'; 
-                }
-                autoRefreshImage(formId, imgId, url);
-            }
-        }, 60000); // Refresh every 10 seconds
-
-        // Function to save form data with a name
-        function saveFormData(formId) {
-            const formData = $(formId).serializeArray();
-            const dataObject = {};
-            formData.forEach(item => {
-                dataObject[item.name] = item.value;
-            });
-
-            const savedName = prompt("Enter a name for this save:");
-            if (savedName) {
-                const currentTabKey = currentTab + '-saves';
-                let savedDataList = JSON.parse(localStorage.getItem(currentTabKey)) || [];
-                savedDataList.push({ name: savedName, data: dataObject });
-                localStorage.setItem(currentTabKey, JSON.stringify(savedDataList));
-                updateSavedDataDropdown();
-            }
-        }
-
-        // Function to load saved form data
-        function loadFormData(formId) {
-            const savedName = $(currentTab + ' .saved-data-dropdown').val();
-            if (savedName) {
-                const currentTabKey = currentTab + '-saves';
-                const savedDataList = JSON.parse(localStorage.getItem(currentTabKey)) || [];
-                const selectedData = savedDataList.find(item => item.name === savedName);
-
-                if (selectedData) {
-                    for (let key in selectedData.data) {
-                        $(`${formId} [name="${key}"]`).val(selectedData.data[key]);
-                    }
-                } else {
-                    alert('No saved data found with that name.');
-                }
-            } else {
-                alert('Please select saved data to load.');
-            }
-        }
-
-        // Function to delete saved form data
-        function deleteFormData() {
-            const savedName = $(currentTab + ' .saved-data-dropdown').val();
-            if (savedName) {
-                const currentTabKey = currentTab + '-saves';
-                let savedDataList = JSON.parse(localStorage.getItem(currentTabKey)) || [];
-                savedDataList = savedDataList.filter(item => item.name !== savedName);
-                localStorage.setItem(currentTabKey, JSON.stringify(savedDataList));
-                alert('Saved data deleted: ' + savedName);
-                updateSavedDataDropdown();
-            } else {
-                alert('Please select saved data to delete.');
-            }
-        }
-
-        // Function to update the saved data dropdown
-        function updateSavedDataDropdown() {
-            const currentTabKey = currentTab + '-saves';
-            const savedDataList = JSON.parse(localStorage.getItem(currentTabKey)) || [];
-            const dropdown = $(currentTab + ' .saved-data-dropdown');
-            dropdown.empty();
-            dropdown.append('<option value="">Select saved data</option>');
-            savedDataList.forEach(item => {
-                dropdown.append(`<option value="${item.name}">${item.name}</option>`);
-            });
-        }
-
-        $(document).ready(function() {
-            // Prevent default form submissions and handle auto-refresh
-            $('#dataForm1').on('submit', function(event) {
-                event.preventDefault();
-                autoRefreshImage('#dataForm1', '#graph-img-tab1', '/');
-            });
-
-            $('#dataForm2').on('submit', function(event) {
-                event.preventDefault();
-                autoRefreshImage('#dataForm2', '#graph-img-tab2', '/cal');
-            });
-
-            $('#dataForm3').on('submit', function(event) {
-                event.preventDefault();
-                autoRefreshImage('#dataForm3', '#graph-img-tab3', '/trend');
-            });
-
-            $('#dataForm4').on('submit', function(event) {
-                event.preventDefault();
-                autoRefreshImage('#dataForm4', '#graph-img-tab4', '/doubleCal');
-            });
-
-            $('#dataForm5').on('submit', function(event) {
-                event.preventDefault();
-                autoRefreshImage('#dataForm5', '#graph-img-tab5', '/ironfly');
-            });
-
-            $('#dataForm6').on('submit', function(event) {
-                event.preventDefault();
-                autoRefreshImage('#dataForm6', '#graph-img-tab6', '/spreadchart');
-            });
-            // Trigger initial image loads
-            autoRefreshImage('#dataForm1', '#graph-img-tab1', '/');
-            autoRefreshImage('#dataForm2', '#graph-img-tab2', '/cal');
-            autoRefreshImage('#dataForm3', '#graph-img-tab3', '/trend');
-            autoRefreshImage('#dataForm4', '#graph-img-tab4', '/doubleCal');
-            autoRefreshImage('#dataForm5', '#graph-img-tab5', '/ironfly');
-            autoRefreshImage('#dataForm6', '#graph-img-tab6', '/spreadchart');
-
-            // Initialize tabs
-            $('.tab-content').hide(); // Hide all tabs by default
-            $('#tab1').show(); // Show the first tab
-
-            // Update saved data dropdown for the first tab
-            updateSavedDataDropdown();
-        });
-    </script>
-    <style>
-        /* Your existing styles */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-        .container {
-            width: 80%;
-            max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            font-size: 24px;
-            color: #333;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .tabs {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .tabs select {
-            font-size: 16px;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-            background: #fafafa;
-        }
-        .tab-content {
-            padding: 20px;
-            border-radius: 8px;
-            background: #f9f9f9;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-        }
-        form fieldset {
-            border: none;
-            padding: 0;
-            margin: 0;
-        }
-        form legend {
-            font-size: 18px;
-            margin-bottom: 10px;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 5px;
-            color: #555;
-        }
-        form label {
-            display: block;
-            font-size: 14px;
-            margin-bottom: 5px;
-            color: #555;
-        }
-        form input[type="text"],
-        form input[type="date"],
-        form input[type="number"],
-        form input[type="submit"] {
-            display: block;
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-        form input[type="submit"] {
-            background-color: #28a745;
-            color: white;
-            cursor: pointer;
-            border: none;
-            font-size: 16px;
-        }
-        form input[type="submit"]:hover {
-            background-color: #218838;
-        }
-        .graph-img {
-            display: block;
-            margin: 20px auto;
-            max-width: 100%;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            background: #fff;
-        }
-        .flash-messages {
-            color: red;
-            font-size: 14px;
-            padding: 10px;
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .flash-messages ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .flash-messages li {
-            margin-bottom: 5px;
-        }
-        .save-load-buttons {
-            margin-bottom: 20px;
-        }
-        .save-load-buttons button {
-            margin-right: 10px;
-            padding: 10px 20px;
-            border: none;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .save-load-buttons button:hover {
-            background-color: #0056b3;
-        }
-        .saved-data-dropdown {
-            margin-bottom: 10px;
-            padding: 10px;
-            width: calc(100% - 22px);
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-    </style>
 </head>
 <body>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
     <div class="container">
         <h1>ATM Multiple Strike and Price Difference</h1>
         <div class="tabs">
@@ -416,6 +63,7 @@
                             Graph will be Auto Refresh for every 60sec
                 </label>
             </div>
+            <div id="loading-screen2" style="display:none;" class="loader">Loading...</div>        
             <img id="graph-img-tab1" class="graph-img" alt="Graph for Tab 1">
         </div>
 
@@ -493,6 +141,35 @@
                             Graph will be Auto Refresh for every 60sec
                 </label>
             </div>
+            <div class="table-container">
+                <h3 onclick="toggleTable('outputTable1')">Double Calendar</h3>
+                <table id="outputTable1" class="collapsible-table">
+                    <thead>
+                        <tr>
+                            <th>Strikes</th>
+                            <th>Last 3 Prices</th>
+                            <th>PNL</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <div class="table-container">
+                <h3 onclick="toggleTable('outputTable2')">Ironfly</h3>
+                <table id="outputTable2" class="collapsible-table">
+                    <thead>
+                        <tr>
+                            <th>Strikes</th>
+                            <th>Last 3 Prices</th>
+                            <th>PNL</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            
+            <div id="loading-screen" style="display:none;" class="loader">Loading...</div>  
             <img id="graph-img-tab2" class="graph-img" alt="Graph for Tab 2">
         </div>
 
@@ -558,6 +235,7 @@
                     Graph will be Auto Refresh for every 60sec
                 </label>
             </div>
+            <div id="loading-screen" style="display:none;" class="loader">Loading...</div>  
             <img id="graph-img-tab4" class="graph-img" alt="Graph for Tab 4">
         </div>
 
@@ -606,6 +284,7 @@
                     Graph will be Auto Refresh for every 60sec
                 </label>
             </div>
+            <div id="loading-screen" style="display:none;" class="loader">Loading...</div>  
             <img id="graph-img-tab5" class="graph-img" alt="Graph for Tab 5">
         </div>
 
@@ -665,3 +344,19 @@
     </div>
 </body>
 </html>
+
+
+
+
+<!-- BANKNIFTY-52600C-25SEP24:BANKNIFTY-52200P-25SEP24:BANKNIFTY-52500C-01OCT24:BANKNIFTY-52500P-01OCT24
+BANKNIFTY-52700C-25SEP24:BANKNIFTY-52300P-25SEP24:BANKNIFTY-52600C-01OCT24:BANKNIFTY-52600P-01OCT24
+BANKNIFTY-52800C-25SEP24:BANKNIFTY-52400P-25SEP24:BANKNIFTY-52700C-01OCT24:BANKNIFTY-52700P-01OCT24
+BANKNIFTY-52900C-25SEP24:BANKNIFTY-52500P-25SEP24:BANKNIFTY-52800C-01OCT24:BANKNIFTY-52800P-01OCT24
+BANKNIFTY-53000C-25SEP24:BANKNIFTY-52600P-25SEP24:BANKNIFTY-52900C-01OCT24:BANKNIFTY-52900P-01OCT24
+
+BANKNIFTY-53100C-25SEP24:BANKNIFTY-52800P-25SEP24:BANKNIFTY-53100C-01OCT24:BANKNIFTY-53100P-01OCT24
+BANKNIFTY-53200C-25SEP24:BANKNIFTY-52900P-25SEP24:BANKNIFTY-53200C-01OCT24:BANKNIFTY-53200P-01OCT24
+BANKNIFTY-53300C-25SEP24:BANKNIFTY-53000P-25SEP24:BANKNIFTY-53300C-01OCT24:BANKNIFTY-53300P-01OCT24
+BANKNIFTY-53400C-25SEP24:BANKNIFTY-53200P-25SEP24:BANKNIFTY-53400C-01OCT24:BANKNIFTY-53400P-01OCT24
+BANKNIFTY-53500C-25SEP24:BANKNIFTY-53300P-25SEP24:BANKNIFTY-53500C-01OCT24:BANKNIFTY-53500P-01OCT24 -->
+
