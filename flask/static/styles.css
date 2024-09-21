@@ -6,6 +6,20 @@
         padding: 0;
         color: #333;
     }
+    .q-fields {
+        display: flex;
+        gap: 10px; /* Adjust spacing between fields */
+        flex-wrap: wrap; /* Allows wrapping to a new line if needed */
+    }
+    
+    .q-fields label {
+        margin: 0; /* Remove default margin */
+        white-space: nowrap; /* Prevents labels from wrapping */
+    }
+    
+    .q-fields input {
+        width: 60px; /* Adjust input width as needed */
+    }
     .container {
         width: 80%;
         max-width: 1200px;
@@ -155,7 +169,7 @@
         color: #fff; /* White text for contrast */
         font-weight: bold; /* Bold text for emphasis */
     }
-    
+
     h3 {
         cursor: pointer;
         user-select: none;
@@ -293,3 +307,4 @@
         transform: rotate(360deg);
     }
     }
+    
