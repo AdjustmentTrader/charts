@@ -382,9 +382,9 @@ def index_cal():
         q2_2 = request.form.get('q2_2')
         q3_2 = request.form.get('q3_2')
         q4_2 = request.form.get('q4_2')
-        start_date2 = request.form.get('start_date2')
-        end_date2 = request.form.get('end_date2')
-        resample_freq2 = request.form.get('resample_freq2', '15T')  # Default to '15T' if not provided
+        start_date2 = request.form.get('start_date1')
+        end_date2 = request.form.get('end_date1')
+        resample_freq2 = request.form.get('resample_freq1', '15T')  # Default to '15T' if not provided
 
         # Construct the URL
         base_cal = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForDoubleCalendar_beta.php'
@@ -395,7 +395,7 @@ def index_cal():
         
         # Build the complete URL
         url_cal = (f"{base_cal}?mode={mode}&symbol={symbols1}&timeframe={timeframe}&u={user}&sid={sid}"
-               f"&q1={q1_1}&q2={q2_1}&q3={q3_1}&q4={q4_1}")
+               f"&q1={q1_1}&q2={q2_1}&q3={q3_1}&q4={q4_1}") 
         url_if = (f"{base_if}?mode={mode}&symbol={symbols2}&timeframe={timeframe}&u={user}&sid={sid}"
                f"&q1={q1_2}&q2={q2_2}&q3={q3_2}&q4={q4_2}")
         data_cal = fetch_data(url_cal)
@@ -465,9 +465,9 @@ def index_ironflyPrice():
         q2_2 = request.form.get('q2_2')
         q3_2 = request.form.get('q3_2')
         q4_2 = request.form.get('q4_2')
-        start_date2 = request.form.get('start_date2')
-        end_date2 = request.form.get('end_date2')
-        resample_freq2 = request.form.get('resample_freq2', '15T')  # Default to '15T' if not provided
+        start_date2 = request.form.get('start_date1')
+        end_date2 = request.form.get('end_date1')
+        resample_freq2 = request.form.get('resample_freq1', '15T')  # Default to '15T' if not provided
 
         # Construct the URL
         base_url = 'https://www.icharts.in/opt/hcharts/stx8req/php/getdataForIronButterly_m_curr_atp.php'
@@ -485,16 +485,37 @@ def index_ironflyPrice():
             df_cal = parse_data_cal(data_cal)
             df_cal_downsampled = downsample_data(df_cal, resample_freq2)
             df_cal_downsampled = df_cal_downsampled[(df_cal_downsampled['DateTime'] >= start_date2) & (df_cal_downsampled['DateTime'] <= end_date2)]
+            df_cal_downsampled['DateTime'] = pd.to_datetime(df_cal_downsampled['DateTime'])
+            # Extract the date only (without time) to group by date
+            df_cal_downsampled['Date'] = df_cal_downsampled['DateTime'].dt.date
+            # Group by the 'Date' and calculate the P&L for each day
+            pnl_by_date = df_cal_downsampled.groupby('Date').apply(
+                lambda group: group['Value'].iloc[-1] - group['Value'].iloc[0]
+            )
+            # Extract the last three values from the 'Value' column
             last_three_values = df_cal_downsampled['Value'].tail(3)
-            # Convert to a comma-separated string
+            # Convert the last three values to a comma-separated string
             values_string = ','.join(map(str, last_three_values))
-            first_value = df_cal_downsampled['Value'].iloc[0]  # First value
-            last_value = df_cal_downsampled['Value'].iloc[-1]  # Last value
-            pnl = last_value - first_value  # Calculate P&L
+            # Convert the results into a printable format
+            pnl_total = set()
+            total_pnl = 0  # Variable to store the sum of all P&Ls
+            for date, pnl in pnl_by_date.items():
+                pnl_total.add(f"Date: {date}, PNL: {pnl:.2f}")
+                total_pnl += pnl  # Add the PNL of each date to the total
+
+            # Convert the P&L results into a string for output
+            pnl_total_str = '\n'.join(pnl_total)
+
+            # Add the total P&L to the output
+            pnl_total_str += f"\nTotal PNL: {total_pnl:.2f}"
+
+            # Print the last three values and the P&L information
+            print(f"Last three values: {values_string}")
+            print(pnl_total_str)
     
     return jsonify({
         'values_string': values_string,
-        'pnl': int(pnl)
+        'pnl': pnl_total_str
     })
 
 @app.route('/doubleCal', methods=['GET', 'POST'])
@@ -562,16 +583,37 @@ def index_doubleCalPrice():
             df_cal = parse_data_cal(data_cal)
             df_cal_downsampled = downsample_data(df_cal, resample_freq1)
             df_cal_downsampled = df_cal_downsampled[(df_cal_downsampled['DateTime'] >= start_date1) & (df_cal_downsampled['DateTime'] <= end_date1)]
+            df_cal_downsampled['DateTime'] = pd.to_datetime(df_cal_downsampled['DateTime'])
+            # Extract the date only (without time) to group by date
+            df_cal_downsampled['Date'] = df_cal_downsampled['DateTime'].dt.date
+            # Group by the 'Date' and calculate the P&L for each day
+            pnl_by_date = df_cal_downsampled.groupby('Date').apply(
+                lambda group: group['Value'].iloc[-1] - group['Value'].iloc[0]
+            )
+            # Extract the last three values from the 'Value' column
             last_three_values = df_cal_downsampled['Value'].tail(3)
-            # Convert to a comma-separated string
+            # Convert the last three values to a comma-separated string
             values_string = ','.join(map(str, last_three_values))
-            first_value = df_cal_downsampled['Value'].iloc[0]  # First value
-            last_value = df_cal_downsampled['Value'].iloc[-1]  # Last value
-            pnl = last_value - first_value  # Calculate P&L
+            # Convert the results into a printable format
+            pnl_total = set()
+            total_pnl = 0  # Variable to store the sum of all P&Ls
+            for date, pnl in pnl_by_date.items():
+                pnl_total.add(f"Date: {date}, PNL: {pnl:.2f}")
+                total_pnl += pnl  # Add the PNL of each date to the total
+
+            # Convert the P&L results into a string for output
+            pnl_total_str = '\n'.join(pnl_total)
+
+            # Add the total P&L to the output
+            pnl_total_str += f"\nTotal PNL: {total_pnl:.2f}"
+
+            # Print the last three values and the P&L information
+            print(f"Last three values: {values_string}")
+            print(pnl_total_str)
 
     return jsonify({
         'values_string': values_string,
-        'pnl': int(pnl)
+        'pnl': str(pnl_total_str)
     })
             
 
