@@ -9,6 +9,25 @@ function autoRefreshImage(formId, imgId, url) {
     $('#graph-img-tab3').hide();
     $('#graph-img-tab4').hide();
     $('#graph-img-tab5').hide();
+    const serialized = $(formId).serialize();
+    console.log('Serialized Form Data:', serialized);
+    // Convert serialized data to an object
+    const formDataObject = {};
+    serialized.split('&').forEach(function(pair) {
+        const [key, value] = pair.split('=');
+        formDataObject[decodeURIComponent(key)] = decodeURIComponent(value);
+    }); 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set time to midnight for comparison
+    
+    const end_date = new Date(formDataObject['end_date'] + 'T00:00:00'); // Append time to handle date string
+    const end_date1 = new Date(formDataObject['end_date1'] + 'T00:00:00');
+    const end_date2 = new Date(formDataObject['end_date2'] + 'T00:00:00'); 
+    const isAnyDateValid = end_date >= today || end_date1 >= today || end_date2 >= today;
+
+    if (!isAnyDateValid) { 
+        //return; 
+    }
     
     $.ajax({
         url: url,
@@ -160,6 +179,8 @@ setInterval(function() {
             formId = '#dataForm2';
             imgId = '#graph-img-tab2';
             url = '/cal';
+            //generateStrikePrices('symbols1', 'outputTable1');
+            //generateStrikePrices('symbols2', 'outputTable2');
         } else if (currentTab === '#tab3') {
             formId = '#dataForm3';
             imgId = '#graph-img-tab3';
@@ -179,7 +200,7 @@ setInterval(function() {
         }
         autoRefreshImage(formId, imgId, url);
     }
-}, 60000); // Refresh every 10 seconds
+}, 600000); // Refresh every 10 seconds
 
 // Function to save form data with a name
 function saveFormData(formId) {
@@ -391,3 +412,4 @@ function generateStrikePrices(symbolInputId, outputTableId) {
         console.log('No matching row found for ' + symbolInputId); // Debugging log
     }
 }
+
