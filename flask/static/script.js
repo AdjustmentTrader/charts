@@ -1,14 +1,9 @@
 var currentTab = '#tab1'; // Default to the first tab
 
-function autoRefreshImage(formId, imgId, url) {
+function autoRefreshImage(formId, imgId, url, event) {
     // Show the loader before the AJAX request
     $('#loading-screen').show();
     $('#loading-screen2').show();
-    $('#graph-img-tab1').hide();
-    $('#graph-img-tab2').hide();
-    $('#graph-img-tab3').hide();
-    $('#graph-img-tab4').hide();
-    $('#graph-img-tab5').hide();
     const serialized = $(formId).serialize();
     console.log('Serialized Form Data:', serialized);
     // Convert serialized data to an object
@@ -25,8 +20,12 @@ function autoRefreshImage(formId, imgId, url) {
     const end_date2 = new Date(formDataObject['end_date2'] + 'T00:00:00'); 
     const isAnyDateValid = end_date >= today || end_date1 >= today || end_date2 >= today;
 
-    if (!isAnyDateValid) { 
-        //return; 
+    if (!event){
+        if(!isAnyDateValid) {
+            $('#loading-screen').hide();
+            $('#loading-screen2').hide();
+            return; 
+        }
     }
     
     $.ajax({
@@ -82,11 +81,6 @@ function autoRefreshImage(formId, imgId, url) {
             // Hide the loader after the image is updated
             $('#loading-screen').hide();
             $('#loading-screen2').hide();
-            $('#graph-img-tab1').show();
-            $('#graph-img-tab2').show();
-            $('#graph-img-tab3').show();
-            $('#graph-img-tab4').show();
-            $('#graph-img-tab5').show();
         },
         error: function() {
             console.error('Failed to load image');
@@ -174,7 +168,7 @@ setInterval(function() {
         if (currentTab === '#tab1') {
             formId = '#dataForm1';
             imgId = '#graph-img-tab1';
-            url = '/';
+            url = '/straddle';
         } else if (currentTab === '#tab2') {
             formId = '#dataForm2';
             imgId = '#graph-img-tab2';
@@ -198,9 +192,9 @@ setInterval(function() {
             imgId = '#graph-img-tab6';
             url = '/spreadchart'; 
         }
-        autoRefreshImage(formId, imgId, url);
+        autoRefreshImage(formId, imgId, url, false);
     }
-}, 600000); // Refresh every 10 seconds
+}, 60000); // Refresh every 10 seconds
 
 // Function to save form data with a name
 function saveFormData(formId) {
@@ -271,42 +265,42 @@ $(document).ready(function() {
     // Prevent default form submissions and handle auto-refresh
     $('#dataForm1').on('submit', function(event) {
         event.preventDefault();
-        autoRefreshImage('#dataForm1', '#graph-img-tab1', '/');
+        autoRefreshImage('#dataForm1', '#graph-img-tab1', '/straddle', true);
     });
 
     $('#dataForm2').on('submit', function(event) {
         event.preventDefault();
         generateStrikePrices('symbols1', 'outputTable1');
         generateStrikePrices('symbols2', 'outputTable2');
-        autoRefreshImage('#dataForm2', '#graph-img-tab2', '/cal');
+        autoRefreshImage('#dataForm2', '#graph-img-tab2', '/cal', true);
     });
 
     $('#dataForm3').on('submit', function(event) {
         event.preventDefault();
-        autoRefreshImage('#dataForm3', '#graph-img-tab3', '/trend');
+        autoRefreshImage('#dataForm3', '#graph-img-tab3', '/trend', true);
     });
 
     $('#dataForm4').on('submit', function(event) {
         event.preventDefault();
-        autoRefreshImage('#dataForm4', '#graph-img-tab4', '/doubleCal');
+        autoRefreshImage('#dataForm4', '#graph-img-tab4', '/doubleCal', true);
     });
 
     $('#dataForm5').on('submit', function(event) {
         event.preventDefault();
-        autoRefreshImage('#dataForm5', '#graph-img-tab5', '/ironfly');
+        autoRefreshImage('#dataForm5', '#graph-img-tab5', '/ironfly'), true;
     });
 
     $('#dataForm6').on('submit', function(event) {
         event.preventDefault();
-        autoRefreshImage('#dataForm6', '#graph-img-tab6', '/spreadchart');
+        autoRefreshImage('#dataForm6', '#graph-img-tab6', '/spreadchart', true);
     });
     // Trigger initial image loads
-    autoRefreshImage('#dataForm1', '#graph-img-tab1', '/');
-    autoRefreshImage('#dataForm2', '#graph-img-tab2', '/cal');
-    autoRefreshImage('#dataForm3', '#graph-img-tab3', '/trend');
-    autoRefreshImage('#dataForm4', '#graph-img-tab4', '/doubleCal');
-    autoRefreshImage('#dataForm5', '#graph-img-tab5', '/ironfly');
-    autoRefreshImage('#dataForm6', '#graph-img-tab6', '/spreadchart');
+    autoRefreshImage('#dataForm1', '#graph-img-tab1', '/straddle', true);
+    autoRefreshImage('#dataForm2', '#graph-img-tab2', '/cal', true);
+    autoRefreshImage('#dataForm3', '#graph-img-tab3', '/trend', true);
+    autoRefreshImage('#dataForm4', '#graph-img-tab4', '/doubleCal', true);
+    autoRefreshImage('#dataForm5', '#graph-img-tab5', '/ironfly', true);
+    autoRefreshImage('#dataForm6', '#graph-img-tab6', '/spreadchart', true);
 
     // Initialize tabs
     $('.tab-content').hide(); // Hide all tabs by default
