@@ -23,7 +23,7 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'  # Redirect to login page when not authenticated
 
 # Hardcoded users (username, password)
-users = {'admin': 'admin123', 'admin': 'admin123!'}
+users = {'admin': 'admin123', 'admin1': 'admin123!'}
 
 # User model
 class User(UserMixin):
