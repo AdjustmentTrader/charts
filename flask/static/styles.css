@@ -201,6 +201,21 @@ input::placeholder {
     opacity: 0.7; /* Slightly reduced opacity for a softer look */
 }
 
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="email"],
+textarea {
+    text-transform: uppercase; /* Automatically capitalize text */
+    /* Other styles you may want to include */
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
 
 .save-load-buttons button {
     margin-right: 10px;
@@ -249,69 +264,12 @@ h3 {
     font-weight: bold; /* Bold text for emphasis */
 }
 
-/* Loading Spinner */
-.loader,
-.loader:before,
-.loader:after {
-    border-radius: 50%;
-}
-
-.loader {
-    color: #ffffff;
-    font-size: 11px;
-    text-indent: -99999em;
-    margin: 55px auto;
-    position: relative;
-    width: 3.33em; /* Reduced to 1/3 */
-    height: 3.33em; /* Reduced to 1/3 */
-    box-shadow: inset 0 0 0 0.33em; /* Adjusted for 1/3 size */
-    transform: translateZ(0);
-}
-
-.loader:before,
-.loader:after {
-    position: absolute;
-    content: '';
-}
-
-.loader:before {
-    width: 1.73em; /* Reduced to 1/3 */
-    height: 3.4em; /* Reduced to 1/3 */
-    background: #0dc5c1; /* Light color */
-    border-radius: 3.4em 0 0 3.4em; /* Adjusted */
-    top: -0.03em; /* Adjusted */
-    left: -0.03em; /* Adjusted */
-    transform-origin: 1.7em 1.7em;
-    animation: load2 2s infinite ease 1.5s;
-}
-
-.loader:after {
-    width: 1.73em; /* Reduced to 1/3 */
-    height: 3.4em; /* Reduced to 1/3 */
-    background: #0dc5c1; /* Light color */
-    border-radius: 0 3.4em 3.4em 0; /* Adjusted */
-    top: -0.03em; /* Adjusted */
-    left: 1.63em; /* Adjusted */
-    transform-origin: 0.03em 1.7em;
-    animation: load2 2s infinite ease;
-}
-
 /* Graph container */
 .graph-container {
     position: relative; /* Ensures the loader can be positioned absolutely inside */
     width: fit-content; /* Adjust according to your image size or use a fixed size */
 }
 
-.loader {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); /* Center the loader */
-    z-index: 1; /* Ensure the loader appears above the image */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 
 .graph-img {
     width: 100%; /* Adjust to your desired size */
@@ -385,5 +343,63 @@ tr:hover {
     }
     .q-fields input {
         width: 100%; /* Full width on small screens */
+    }
+}
+
+/* Loading Spinner */
+.loader,
+.loader:before,
+.loader:after {
+    border-radius: 50%;
+}
+
+.loader {
+    display: none; /* Initially hide the loader */
+    color: #ffffff;
+    font-size: 11px;
+    text-indent: -99999em;
+    margin: 55px auto;
+    position: relative;
+    width: 3.33em; /* Reduced to 1/3 */
+    height: 3.33em; /* Reduced to 1/3 */
+    box-shadow: inset 0 0 0 0.33em; /* Adjusted for 1/3 size */
+    transform: translateZ(0);
+}
+
+.loader:before,
+.loader:after {
+    position: absolute;
+    content: '';
+}
+
+.loader:before {
+    width: 1.73em; /* Reduced to 1/3 */
+    height: 3.4em; /* Reduced to 1/3 */
+    background: #0dc5c1; /* Light color */
+    border-radius: 3.4em 0 0 3.4em; /* Adjusted */
+    top: -0.03em; /* Adjusted */
+    left: -0.03em; /* Adjusted */
+    transform-origin: 1.7em 1.7em;
+    animation: load2 2s infinite ease 1.5s;
+}
+
+.loader:after {
+    width: 1.73em; /* Reduced to 1/3 */
+    height: 3.4em; /* Reduced to 1/3 */
+    background: #0dc5c1; /* Light color */
+    border-radius: 0 3.4em 3.4em 0; /* Adjusted */
+    top: -0.03em; /* Adjusted */
+    left: 1.63em; /* Adjusted */
+    transform-origin: 0.03em 1.7em;
+    animation: load2 2s infinite ease;
+}
+
+/* Animation */
+@keyframes load2 {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
     }
 }
