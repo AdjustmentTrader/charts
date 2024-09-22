@@ -259,10 +259,19 @@ h3 {
 }
 
 .selected-row {
-    background-color: #4caf50; /* Green for selected row */
-    color: #fff; /* White text for contrast */
+    background-color: #f51b1b; /* Full row background color */
+    color: #ffffff; /* White text for contrast */
     font-weight: bold; /* Bold text for emphasis */
 }
+
+/* Apply background color to individual table cells as well, for better control */
+.selected-row td {
+    background-color: #f51b1b; /* Same background color for the cells */
+    border-color: #c00e0e; /* Red border */
+    color: #ffffff; /* Ensure text color stays white */
+}
+
+
 
 /* Graph container */
 .graph-container {
