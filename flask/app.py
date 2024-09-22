@@ -10,8 +10,57 @@ from io import BytesIO
 import datetime
 import yfinance as yf
 from flask import jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+
 
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'  # Set a secret key for sessions
+
+# Setup Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'  # Redirect to login page when not authenticated
+
+# Hardcoded users (username, password)
+users = {'admin': 'admin123', 'admin': 'admin123!'}
+
+# User model
+class User(UserMixin):
+    def __init__(self, username):
+        self.id = username
+
+# User loader for Flask-Login
+@login_manager.user_loader
+def load_user(username):
+    if username in users:
+        return User(username)
+    return None
+
+@app.route('/')
+@login_required
+def home():
+    return render_template('index.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username in users and users[username] == password:
+            user = User(username)
+            login_user(user)
+            return redirect(url_for('home'))
+        else:
+            flash('Invalid username or password')
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.')
+    return redirect(url_for('login'))
 
 # Define the cookies and headers
 cookies = {
@@ -289,7 +338,7 @@ def plot_data_doublcal(df_merged, symbol_nf, start_date, end_date):
     return img
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/straddle', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         symbol_nf = request.form.get('symbol_nf')
