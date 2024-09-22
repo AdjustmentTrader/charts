@@ -8,9 +8,24 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="flash-message">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endwith %}
+
+        <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+
+
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <div class="container">
-        <h1>ATM Multiple Strike and Price Difference</h1>
+        <h1 class="premium-charts-title">Generate Premium Charts</h1>
         <div class="tabs">
             <select onchange="onTabChange(event)">
                 <option value="tab1">Straddle</option>
@@ -59,12 +74,11 @@
                 <button onclick="saveFormData('#dataForm1')">Save</button>
                 <button onclick="loadFormData('#dataForm1')">Load</button>
                 <button onclick="deleteFormData()">Delete</button>
-                <label for="Auto" style="display: inline-block; font-weight: bold;  color: grey; font-size: 16px; text-align: center; ">
-                            Graph will be Auto Refresh for every 60sec
-                </label>
             </div>
-            <div id="loading-screen2" style="display:none;" class="loader">Loading...</div>        
-            <img id="graph-img-tab1" class="graph-img" alt="Graph for Tab 1">
+            <div class="graph-container">
+                <div id="loading-screen" class="loader" style="display:none;">Loading...</div>
+                <img id="graph-img-tab1" class="graph-img">
+            </div>   
         </div>
 
         <!-- Tab 2 -->
@@ -159,9 +173,6 @@
                 <button onclick="saveFormData('#dataForm2')">Save</button>
                 <button onclick="loadFormData('#dataForm2')">Load</button>
                 <button onclick="deleteFormData()">Delete</button>
-                <label for="Auto" style="display: inline-block; font-weight: bold;  color: grey; font-size: 16px; text-align: center; ">
-                            Graph will be Auto Refresh for every 60sec
-                </label>
             </div>
             <div class="table-container">
                 <h3 onclick="toggleTable('outputTable1')">Double Calendar</h3>
@@ -191,8 +202,10 @@
                 </table>
             </div>
             
-            <div id="loading-screen" style="display:none;" class="loader">Loading...</div>  
-            <img id="graph-img-tab2" class="graph-img" alt="Graph for Tab 2">
+            <div class="graph-container">
+                <div id="loading-screen2" class="loader" style="display:none;">Loading...</div>
+                <img id="graph-img-tab2" class="graph-img">
+            </div>            
         </div>
 
         <!-- Tab 3 -->
@@ -210,7 +223,7 @@
                 <button onclick="loadFormData('#dataForm3')">Load</button>
                 <button onclick="deleteFormData()">Delete</button>
             </div> -->
-            <img id="graph-img-tab3" class="graph-img" alt="Graph for Tab 3">
+            <img id="graph-img-tab3" class="graph-img">
         </div>
 
         <!-- Tab 4 -->
@@ -253,12 +266,9 @@
                 <button onclick="saveFormData('#dataForm4')">Save</button>
                 <button onclick="loadFormData('#dataForm4')">Load</button>
                 <button onclick="deleteFormData()">Delete</button>
-                <label for="Auto" style="display: inline-block; font-weight: bold;  color: grey; font-size: 16px; text-align: center; ">
-                    Graph will be Auto Refresh for every 60sec
-                </label>
             </div>
             <div id="loading-screen" style="display:none;" class="loader">Loading...</div>  
-            <img id="graph-img-tab4" class="graph-img" alt="Graph for Tab 4">
+            <img id="graph-img-tab4" class="graph-img">
         </div>
 
         <!-- Tab 5 -->
@@ -302,12 +312,9 @@
                 <button onclick="saveFormData('#dataForm5')">Save</button>
                 <button onclick="loadFormData('#dataForm5')">Load</button>
                 <button onclick="deleteFormData()">Delete</button>
-                <label for="Auto" style="display: inline-block; font-weight: bold;  color: grey; font-size: 16px; text-align: center; ">
-                    Graph will be Auto Refresh for every 60sec
-                </label>
             </div>
             <div id="loading-screen" style="display:none;" class="loader">Loading...</div>  
-            <img id="graph-img-tab5" class="graph-img" alt="Graph for Tab 5">
+            <img id="graph-img-tab5" class="graph-img">
         </div>
 
         <!-- Tab 5 -->
@@ -345,40 +352,9 @@
                 <button onclick="saveFormData('#dataForm6')">Save</button>
                 <button onclick="loadFormData('#dataForm6')">Load</button>
                 <button onclick="deleteFormData()">Delete</button>
-                <label for="Auto" style="display: inline-block; font-weight: bold;  color: grey; font-size: 16px; text-align: center; ">
-                    Graph will be Auto Refresh for every 60sec
-                </label>
             </div>
-            <img id="graph-img-tab6" class="graph-img" alt="Graph for Tab 6">
+            <img id="graph-img-tab6" class="graph-img">
         </div>
-
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-messages">
-                    <ul>
-                        {% for category, message in messages %}
-                            <li class="{{ category }}">{{ message }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            {% endif %}
-        {% endwith %}
     </div>
 </body>
 </html>
-
-
-
-
-<!-- BANKNIFTY-52600C-25SEP24:BANKNIFTY-52200P-25SEP24:BANKNIFTY-52500C-01OCT24:BANKNIFTY-52500P-01OCT24
-BANKNIFTY-52700C-25SEP24:BANKNIFTY-52300P-25SEP24:BANKNIFTY-52600C-01OCT24:BANKNIFTY-52600P-01OCT24
-BANKNIFTY-52800C-25SEP24:BANKNIFTY-52400P-25SEP24:BANKNIFTY-52700C-01OCT24:BANKNIFTY-52700P-01OCT24
-BANKNIFTY-52900C-25SEP24:BANKNIFTY-52500P-25SEP24:BANKNIFTY-52800C-01OCT24:BANKNIFTY-52800P-01OCT24
-BANKNIFTY-53000C-25SEP24:BANKNIFTY-52600P-25SEP24:BANKNIFTY-52900C-01OCT24:BANKNIFTY-52900P-01OCT24
-
-BANKNIFTY-53100C-25SEP24:BANKNIFTY-52800P-25SEP24:BANKNIFTY-53100C-01OCT24:BANKNIFTY-53100P-01OCT24
-BANKNIFTY-53200C-25SEP24:BANKNIFTY-52900P-25SEP24:BANKNIFTY-53200C-01OCT24:BANKNIFTY-53200P-01OCT24
-BANKNIFTY-53300C-25SEP24:BANKNIFTY-53000P-25SEP24:BANKNIFTY-53300C-01OCT24:BANKNIFTY-53300P-01OCT24
-BANKNIFTY-53400C-25SEP24:BANKNIFTY-53200P-25SEP24:BANKNIFTY-53400C-01OCT24:BANKNIFTY-53400P-01OCT24
-BANKNIFTY-53500C-25SEP24:BANKNIFTY-53300P-25SEP24:BANKNIFTY-53500C-01OCT24:BANKNIFTY-53500P-01OCT24 -->
-
