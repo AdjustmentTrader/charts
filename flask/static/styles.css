@@ -100,7 +100,6 @@ form label {
 
 form input[type="text"],
 form input[type="date"],
-form input[type="datetime-local"],
 form input[type="number"],
 form input[type="submit"],
 textarea {
@@ -206,7 +205,6 @@ input[type="text"],
 input[type="password"],
 input[type="number"],
 input[type="date"],
-form input[type="datetime-local"],
 input[type="email"],
 textarea {
     text-transform: uppercase; /* Automatically capitalize text */
@@ -414,4 +412,3 @@ tr:hover {
         transform: rotate(360deg);
     }
 }
-
