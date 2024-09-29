@@ -295,7 +295,7 @@ $(document).ready(function() {
         autoRefreshImage('#dataForm6', '#graph-img-tab6', '/spreadchart', true);
     });
     // Trigger initial image loads
-    autoRefreshImage('#dataForm1', '#graph-img-tab1', '/straddle', true);
+    autoRefreshImage('#dataForm1', '#graph-img-tab1', '/', true);
     autoRefreshImage('#dataForm2', '#graph-img-tab2', '/cal', true);
     autoRefreshImage('#dataForm3', '#graph-img-tab3', '/trend', true);
     autoRefreshImage('#dataForm4', '#graph-img-tab4', '/doubleCal', true);
@@ -406,4 +406,3 @@ function generateStrikePrices(symbolInputId, outputTableId) {
         console.log('No matching row found for ' + symbolInputId); // Debugging log
     }
 }
-
