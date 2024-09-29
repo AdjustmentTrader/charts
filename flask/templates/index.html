@@ -1,359 +1,117 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ATM Generator and Plotter</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Login - Trading Platform</title>
+    <style>
+        body {
+            background-color: #1e1e2f; /* Dark background */
+            font-family: 'Arial', sans-serif;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-container {
+            background-color: #2c2f48; /* Darker container */
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h2 {
+            color: #4caf50; /* Green accent for title */
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            text-align: left;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            background-color: #3a3f58; /* Input background */
+            color: #ffffff; /* Input text color */
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #4caf50; /* Button color */
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .flash-messages ul {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        .flash-messages ul li {
+            background-color: #ff4d4d; /* Error message background */
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .form-container {
+            width: 100%;
+        }
+    </style>
 </head>
 <body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <div class="form-container">
+            <form method="POST" action="{{ url_for('login') }}">
+                <label for="username">Username:</label>
+                <input type="text" name="username" placeholder="Enter your username" required>
 
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <div class="flash-message">
-                {% for message in messages %}
-                    <p>{{ message }}</p>
-                {% endfor %}
-            </div>
-            {% endif %}
-        {% endwith %}
+                <label for="password">Password:</label>
+                <input type="password" name="password" placeholder="Enter your password" required>
 
-        <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
-
-
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-    <div class="container">
-        <h1 class="premium-charts-title">Generate Premium Charts</h1>
-        <div class="tabs">
-            <select onchange="onTabChange(event)">
-                <option value="tab1">Straddle</option>
-                <option value="tab2">DoubleCalendar and IronButterfly</option>
-                <option value="tab3">Market Trend</option>
-                <option value="tab4">DoubleCalendar</option>
-                <option value="tab5">IronButterfly</option>
-                <option value="tab6">SpreadChart</option>
-            </select>
-        </div>
-
-        <!-- Tab 1 -->
-        <div id="tab1" class="tab-content">
-            <form id="dataForm1" method="POST">
-                <fieldset>
-                    <legend>Straddle Price</legend>
-                    <label for="symbol_nf">Symbol 1:</label>
-                    <input type="text" id="symbol_nf" name="symbol_nf" placeholder="NIFTY-05SEP24">
-                    
-                    <label for="symbol_sx">Symbol 2:</label>
-                    <input type="text" id="symbol_sx" name="symbol_sx" placeholder="SENSEX-06SEP24">
-                    
-                    <label for="start_date">Start Date:</label>
-                    <input type="datetime-local" id="start_date" name="start_date" value="2024-01-01T09:15" required>
-                    
-                    <label for="end_date">End Date: should be next day of start_date</label>
-                    <input type="datetime-local" id="end_date" name="end_date"  value="2024-01-01T15:30" required>
-                    
-                    <label for="resample_freq">Resample Frequency:</label>
-                    <input type="text" id="resample_freq" name="resample_freq" value="15T" placeholder="15T">
-
-                    <div>
-                        <input type="checkbox" id="enable_alert" name="enable_alert">
-                        <label for="enable_alert">Enable Alert</label>
-                        <input type="text" id="chatId" name="chatId" placeholder="1161971259">
-                        <label for="enable_alert">chatId</label>
-                        <input type="text" id="botToken" name="botToken" placeholder="7293565324:AAFi_BVJ2c1CBQlEDTytkKRXV39KJnB7gAM">
-                        <label for="enable_alert">botToken</label>
-                    </div>
-
-                    <input type="submit" value="Fetch Data">
-                </fieldset>
+                <button type="submit">Login</button>
             </form>
-            <div class="save-load-buttons">
-                <select class="saved-data-dropdown"></select>
-                <button onclick="saveFormData('#dataForm1')">Save</button>
-                <button onclick="loadFormData('#dataForm1')">Load</button>
-                <button onclick="deleteFormData()">Delete</button>
-            </div>
-            <div class="graph-container">
-                <div id="loading-screen" class="loader" style="display:none;">Loading...</div>
-                <img id="graph-img-tab1" class="graph-img">
-            </div>   
-        </div>
 
-        <!-- Tab 2 -->
-        <div id="tab2" class="tab-content">
-            <form id="dataForm2" method="POST">
-                <fieldset>
-                    <!-- First Set of Fields: DoubleCalendar -->
-                    <fieldset>
-                        <legend>DoubleCalendar</legend>
-                        
-                        <label for="symbols1">Symbols: CE BUY WEEKLY - PE BUY WEEKLY - CE SELL NEXT - PE SELL NEXT</label>
-                        <input type="text" id="symbols1" name="symbols1" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
-                        
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                            <label for="q1_1" style="margin: 0; white-space: nowrap;">Q1:</label>
-                            <input type="number" id="q1_1" name="q1_1" value="2" required 
-                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
-                                   onfocus="this.style.borderColor='#007BFF';" 
-                                   onblur="this.style.borderColor='#ccc';">
-                        
-                            <label for="q2_1" style="margin: 0; white-space: nowrap;">Q2:</label>
-                            <input type="number" id="q2_1" name="q2_1" value="2" required 
-                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
-                                   onfocus="this.style.borderColor='#007BFF';" 
-                                   onblur="this.style.borderColor='#ccc';">
-                        
-                            <label for="q3_1" style="margin: 0; white-space: nowrap;">Q3:</label>
-                            <input type="number" id="q3_1" name="q3_1" value="2" required 
-                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
-                                   onfocus="this.style.borderColor='#007BFF';" 
-                                   onblur="this.style.borderColor='#ccc';">
-                        
-                            <label for="q4_1" style="margin: 0; white-space: nowrap;">Q4:</label>
-                            <input type="number" id="q4_1" name="q4_1" value="2" required 
-                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
-                                   onfocus="this.style.borderColor='#007BFF';" 
-                                   onblur="this.style.borderColor='#ccc';">
-                        </div>                        
-                        
-                    </fieldset>
-        
-                    <!-- Second Set of Fields: IronButterfly -->
-                    <fieldset>
-                        <legend>IronButterfly</legend>
-                        
-                        <label for="symbols2">Symbols: CE BUY - CE SELL - PE SELL - PE BUY</label>
-                        <input type="text" id="symbols2" name="symbols2" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
-                        
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                            <label for="q1_2" style="margin: 0; white-space: nowrap;">Q1:</label>
-                            <input type="number" id="q1_2" name="q1_2" value="3" required 
-                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
-                                   onfocus="this.style.borderColor='#007BFF';" 
-                                   onblur="this.style.borderColor='#ccc';">
-                        
-                            <label for="q2_2" style="margin: 0; white-space: nowrap;">Q2:</label>
-                            <input type="number" id="q2_2" name="q2_2" value="3" required 
-                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
-                                   onfocus="this.style.borderColor='#007BFF';" 
-                                   onblur="this.style.borderColor='#ccc';">
-                        
-                            <label for="q3_2" style="margin: 0; white-space: nowrap;">Q3:</label>
-                            <input type="number" id="q3_2" name="q3_2" value="3" required 
-                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
-                                   onfocus="this.style.borderColor='#007BFF';" 
-                                   onblur="this.style.borderColor='#ccc';">
-                        
-                            <label for="q4_2" style="margin: 0; white-space: nowrap;">Q4:</label>
-                            <input type="number" id="q4_2" name="q4_2" value="3" required 
-                                   style="width: 60px; border: 1px solid #ccc; padding: 5px; outline: none; transition: border-color 0.3s;"
-                                   onfocus="this.style.borderColor='#007BFF';" 
-                                   onblur="this.style.borderColor='#ccc';">
-                        </div>
-                        
-                        
-                        <label for="start_date1">Start Date:</label>
-                        <input type="datetime-local" id="start_date1" name="start_date1" value="2024-09-28T09:15" required>
-
-                        <label for="end_date1">End Date: should be next day of start_date</label>
-                        <input type="datetime-local" id="end_date1" name="end_date1" value="2024-01-01T15:30" required>
-                        
-                        <label for="resample_freq1">Resample Frequency:</label>
-                        <input type="text" id="resample_freq1" name="resample_freq1" value="15T">
-                        
-                    </fieldset>
-                    
-                    <input type="submit" value="Fetch Data">
-                </fieldset>
-            </form>
-            <div class="save-load-buttons">
-                <select class="saved-data-dropdown"></select>
-                <button onclick="saveFormData('#dataForm2')">Save</button>
-                <button onclick="loadFormData('#dataForm2')">Load</button>
-                <button onclick="deleteFormData()">Delete</button>
+            <!-- Flash messages -->
+            <div class="flash-messages">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <ul>
+                            {% for message in messages %}
+                                <li>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endwith %}
             </div>
-            <div class="table-container">
-                <h3 onclick="toggleTable('outputTable1')">Double Calendar</h3>
-                <table id="outputTable1" class="collapsible-table">
-                    <thead>
-                        <tr>
-                            <th>Strikes</th>
-                            <th>Last 3 Prices</th>
-                            <th>PNL</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            
-            <div class="table-container">
-                <h3 onclick="toggleTable('outputTable2')">Ironfly</h3>
-                <table id="outputTable2" class="collapsible-table">
-                    <thead>
-                        <tr>
-                            <th>Strikes</th>
-                            <th>Last 3 Prices</th>
-                            <th>PNL</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            
-            <div class="graph-container">
-                <div id="loading-screen2" class="loader" style="display:none;">Loading...</div>
-                <img id="graph-img-tab2" class="graph-img">
-            </div>            
-        </div>
-
-        <!-- Tab 3 -->
-        <div id="tab3" class="tab-content">
-            <form id="dataForm3" method="POST">
-                <fieldset>
-                    <legend>Market Trend (Auto Refresh Every 60sec)</legend>
-                    <!-- You can add form fields here if needed -->
-                </fieldset>
-                <input type="submit" value="Fetch Data">
-            </form>
-            <!-- <div class="save-load-buttons">
-                <button onclick="saveFormData('#dataForm3')">Save</button>
-                <select class="saved-data-dropdown"></select>
-                <button onclick="loadFormData('#dataForm3')">Load</button>
-                <button onclick="deleteFormData()">Delete</button>
-            </div> -->
-            <img id="graph-img-tab3" class="graph-img">
-        </div>
-
-        <!-- Tab 4 -->
-        <div id="tab4" class="tab-content">
-            <form id="dataForm4" method="POST">
-                <fieldset>
-                    <!-- First Set of Fields: DoubleCalendar -->
-                    <fieldset>
-                        <legend>DoubleCalendar</legend>
-                        
-                        <label for="symbols1">Symbols: CE BUY WEEKLY - PE BUY WEEKLY - CE SELL NEXT - PE SELL NEXT</label>
-                        <input type="text" id="symbols1" name="symbols1" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
-                        
-                        <label for="q1_1">Q1:</label>
-                        <input type="number" id="q1_1" name="q1_1" value="2" required>
-                        
-                        <label for="q2_1">Q2:</label>
-                        <input type="number" id="q2_1" name="q2_1" value="2" required>
-                        
-                        <label for="q3_1">Q3:</label>
-                        <input type="number" id="q3_1" name="q3_1" value="2" required>
-                        
-                        <label for="q4_1">Q4:</label>
-                        <input type="number" id="q4_1" name="q4_1" value="2" required>
-                        
-                        <label for="start_date1">Start Date:</label>
-                        <input type="datetime-local" id="start_date1" name="start_date1" value="2024-01-01T09:15" required>
-                        
-                        <label for="end_date1">End Date: should be next day of start_date</label>
-                        <input type="datetime-local" id="end_date1" name="end_date1" value="2024-01-01T05:30" required>
-                        
-                        <label for="resample_freq1">Resample Frequency:</label>
-                        <input type="text" id="resample_freq1" name="resample_freq1" value="15T">
-                    </fieldset>
-                    <input type="submit" value="Fetch Data">
-                </fieldset>
-            </form>
-            <div class="save-load-buttons">
-                <select class="saved-data-dropdown"></select>
-                <button onclick="saveFormData('#dataForm4')">Save</button>
-                <button onclick="loadFormData('#dataForm4')">Load</button>
-                <button onclick="deleteFormData()">Delete</button>
-            </div>
-            <div id="loading-screen" style="display:none;" class="loader">Loading...</div>  
-            <img id="graph-img-tab4" class="graph-img">
-        </div>
-
-        <!-- Tab 5 -->
-        <div id="tab5" class="tab-content">
-            <form id="dataForm5" method="POST">
-                <fieldset>
-                    <!-- Second Set of Fields: IronButterfly -->
-                    <fieldset>
-                        <legend>IronButterfly</legend>
-                        
-                        <label for="symbols2">Symbols: CE BUY - CE SELL - PE SELL - PE BUY</label>
-                        <input type="text" id="symbols2" name="symbols2" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
-                        
-                        <label for="q1_2">Q1:</label>
-                        <input type="number" id="q1_2" name="q1_2" value="1" required>
-                        
-                        <label for="q2_2">Q2:</label>
-                        <input type="number" id="q2_2" name="q2_2" value="1" required>
-                        
-                        <label for="q3_2">Q3:</label>
-                        <input type="number" id="q3_2" name="q3_2" value="1" required>
-                        
-                        <label for="q4_2">Q4:</label>
-                        <input type="number" id="q4_2" name="q4_2" value="1" required>
-                        
-                        <label for="start_date2">Start Date:</label>
-                        <input type="datetime-local" id="start_date2" name="start_date2" value="2024-01-01T09:15" required>
-                        
-                        <label for="end_date2">End Date: should be next day of start_date</label>
-                        <input type="datetime-local" id="end_date2" name="end_date2" value="2024-01-01T15:30" required>
-                        
-                        <label for="resample_freq2">Resample Frequency:</label>
-                        <input type="text" id="resample_freq2" name="resample_freq2" value="15T">
-                    </fieldset>
-                    
-                    <input type="submit" value="Fetch Data">
-                </fieldset>
-            </form>
-            <div class="save-load-buttons">
-                <select class="saved-data-dropdown"></select>
-                <button onclick="saveFormData('#dataForm5')">Save</button>
-                <button onclick="loadFormData('#dataForm5')">Load</button>
-                <button onclick="deleteFormData()">Delete</button>
-            </div>
-            <div id="loading-screen" style="display:none;" class="loader">Loading...</div>  
-            <img id="graph-img-tab5" class="graph-img">
-        </div>
-
-        <!-- Tab 5 -->
-        <div id="tab6" class="tab-content">
-            <form id="dataForm6" method="POST">
-                <fieldset>
-                    <!-- Second Set of Fields: SpreadChart -->
-                    <fieldset>
-                        <legend>SpreadChart</legend>
-                        
-                        <label for="symbols2">Symbols:  LONG - SHORT </label>
-                        <input type="text" id="symbols2" name="symbols2" placeholder="BANKNIFTY-51800C-18SEP24:BANKNIFTY-51900C-18SEP24" required>
-                        
-                        <label for="q1_2">Q1: LONG QTY</label>
-                        <input type="number" id="q1_2" name="q1_2" value="1" required>
-                        
-                        <label for="q2_2">Q2: SHORT QTY</label>
-                        <input type="number" id="q2_2" name="q2_2" value="1" required>
-                        
-                        <label for="start_date2">Start Date:</label>
-                        <input type="datetime-local" id="start_date2" name="start_date2" value="2024-01-01T09:15" required>
-                        
-                        <label for="end_date2">End Date: should be next day of start_date</label>
-                        <input type="datetime-local" id="end_date2" name="end_date2" value="2024-01-01T15:30" required>
-                        
-                        <label for="resample_freq2">Resample Frequency:</label>
-                        <input type="text" id="resample_freq2" name="resample_freq2" value="15T">
-                    </fieldset>
-                    
-                    <input type="submit" value="Fetch Data">
-                </fieldset>
-            </form>
-            <div class="save-load-buttons">
-                <select class="saved-data-dropdown"></select>
-                <button onclick="saveFormData('#dataForm6')">Save</button>
-                <button onclick="loadFormData('#dataForm6')">Load</button>
-                <button onclick="deleteFormData()">Delete</button>
-            </div>
-            <img id="graph-img-tab6" class="graph-img">
         </div>
     </div>
 </body>
