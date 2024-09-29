@@ -360,16 +360,22 @@ def index():
             is_today, is_in_time_range = True, True
 
         # Construct URLs with conditional latestData parameter
-        if is_today and is_in_time_range:
-            nifty_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
-            sensex_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
-        else:
-            nifty_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}"
-            sensex_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}"
+        
+        nifty_url_1 = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
+        sensex_url_1 = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
+        
+        nifty_url_2 = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}"
+        sensex_url_2 = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}"
 
         # Fetch data from URLs
-        data_nf = fetch_data(nifty_url)
-        data_sx = fetch_data(sensex_url)
+        data_nf_1 = fetch_data(nifty_url_1)
+        data_sx_1 = fetch_data(sensex_url_1)
+        data_nf_2 = fetch_data(nifty_url_2)
+        data_sx_2 = fetch_data(sensex_url_2)
+
+        data_nf = data_nf_1 + data_nf_2
+        data_sx = data_sx_1 + data_sx_2
+
         data_future = fetch_data(get_symbol_url(symbol_nf, symbol_sx))
 
         if data_nf and data_sx and data_future:
