@@ -1,5 +1,167 @@
 var currentTab = '#tab1'; // Default to the first tab
 
+window.onload = setDefaultDateTime;
+
+function setDefaultDateTime() {
+    // Get today's date and time
+    const today = new Date();
+    
+    // Format the date and time as YYYY-MM-DDTHH:MM (T separates date and time)
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Add leading zero if needed
+    const day = String(today.getDate()).padStart(2, '0'); // Add leading zero if needed
+    const hours = '09'; // Set default hour to 09 (9 AM)
+    const minutes = '15'; // Set default minute to 15
+    const hours_end = '15'; // Set default hour to 09 (9 AM)
+    const minutes_end = '30'; // Set default minute to 15
+
+    // Combine into the required format for datetime-local
+    const formattedDateTime_start = `${year}-${month}-${day}T${hours}:${minutes}`;
+    const formattedDateTime_end = `${year}-${month}-${day}T${hours_end}:${minutes_end}`;
+    
+
+    // Set default date and time value to the input
+    const dateTimeInput_start = document.getElementsByName('start_date');
+    const dateTimeInput_end = document.getElementsByName('end_date');
+    const dateTimeInput_start_1 = document.getElementsByName('start_date1');
+    const dateTimeInput_end_1 = document.getElementsByName('end_date1');
+    const dateTimeInput_start_2 = document.getElementsByName('start_date2');
+    const dateTimeInput_end_2 = document.getElementsByName('end_date2');
+
+    dateTimeInput_start.forEach(dateTimeInput_start => {
+        dateTimeInput_start.value = formattedDateTime_start;
+    });
+    dateTimeInput_start_1.forEach(dateTimeInput_start_1 => {
+        dateTimeInput_start_1.value = formattedDateTime_start;
+    });
+    dateTimeInput_start_2.forEach(dateTimeInput_start_2 => {
+        dateTimeInput_start_2.value = formattedDateTime_start;
+    });
+
+
+    dateTimeInput_end.forEach(dateTimeInput_end => {
+        dateTimeInput_end.value = formattedDateTime_end;
+    });
+    dateTimeInput_end_1.forEach(dateTimeInput_end_1 => {
+        dateTimeInput_end_1.value = formattedDateTime_end;
+    });
+    dateTimeInput_end_2.forEach(dateTimeInput_end_2 => {
+        dateTimeInput_end_2.value = formattedDateTime_end;
+    });
+};
+
+function onSelectionChange() {
+    const dropdown = document.getElementById('dropdown');
+    const selectedOption = dropdown.value;
+
+    let dayName = '';
+    if (selectedOption === 'BANKNIFTY') {
+        dayName = 'Wednesday';
+    } else if (selectedOption === 'NIFTY') {
+        dayName = 'Thursday';
+    }
+
+    const dates = getNextDates(dayName);
+    displayDates(dates);
+}
+
+function getNextDates(dayName) {
+    const dates = [];
+    const today = new Date();
+    const twoMonthsLater = new Date();
+    twoMonthsLater.setMonth(today.getMonth() + 2);
+
+    let currentDate = new Date(today);
+
+    // Adjust to the next occurrence of the dayName
+    currentDate.setDate(currentDate.getDate() + ((7 - currentDate.getDay() + getDayIndex(dayName)) % 7));
+
+    // Collect all occurrences within the next two months
+    while (currentDate <= twoMonthsLater) {
+        dates.push(formatDate(currentDate));
+        currentDate.setDate(currentDate.getDate() + 7); // move to next week
+    }
+
+    return dates;
+}
+
+function getDayIndex(dayName) {
+    const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    return daysOfWeek.indexOf(dayName);
+}
+
+function formatDate(date) {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = date.toLocaleString('en', { month: 'short' }).toUpperCase();
+    const year = String(date.getFullYear()).slice(-2);
+    return `${day}${month}${year}`;
+}
+
+function displayDates(dates) {
+    const dateList = document.getElementById('dates');
+    dateList.innerHTML = '';  // Clear previous dates
+
+    if (dates.length > 0) {
+        document.getElementById('dateList').style.display = 'block';
+        dates.forEach((date, index) => {
+            const listItem = document.createElement('li');
+
+            const radioButton = document.createElement('input');
+            radioButton.type = 'radio';
+            radioButton.name = 'dateRadio';
+            radioButton.value = date;
+            radioButton.id = `date${index}`;
+            radioButton.onclick = function() {
+                updateSymbolsInput(date);
+            };
+
+            const label = document.createElement('label');
+            label.htmlFor = `date${index}`;
+            label.textContent = date;
+
+            listItem.appendChild(radioButton);
+            listItem.appendChild(label);
+            dateList.appendChild(listItem);
+        });
+    } else {
+        document.getElementById('dateList').style.display = 'none';
+    }
+}
+
+function updateSymbolsInput(selectedDate) {
+    const symbolsInput_symbols_nf = document.getElementById('symbol_nf').value;
+
+    // Replace the date in the input field using regex pattern to match dates like '05SEP24'
+    const updatedSymbols_symbols_nf = symbolsInput_symbols_nf.replace(/\d{2}[A-Z]{3}\d{2}/g, selectedDate);
+
+    // Set the updated value back to the input field
+    document.getElementById('symbol_nf').value = updatedSymbols_symbols_nf;
+
+    const symbolsInput_symbols_sx = document.getElementById('symbol_sx').value;
+
+    // Replace the date in the input field using regex pattern to match dates like '05SEP24'
+    const updatedSymbols_symbols_sx = symbolsInput_symbols_sx.replace(/\d{2}[A-Z]{3}\d{2}/g, selectedDate);
+
+    // Set the updated value back to the input field
+    document.getElementById('symbol_sx').value = updatedSymbols_symbols_sx;
+    
+    const symbolsInput = document.getElementById('symbols1').value;
+
+    // Replace the date in the input field using regex pattern to match dates like '05SEP24'
+    const updatedSymbols = symbolsInput.replace(/\d{2}[A-Z]{3}\d{2}/g, selectedDate);
+
+    // Set the updated value back to the input field
+    document.getElementById('symbols1').value = updatedSymbols;
+
+    const symbolsInput_2 = document.getElementById('symbols2').value;
+
+    // Replace the date in the input field using regex pattern to match dates like '05SEP24'
+    const updatedSymbols_2 = symbolsInput_2.replace(/\d{2}[A-Z]{3}\d{2}/g, selectedDate);
+
+    // Set the updated value back to the input field
+    document.getElementById('symbols2').value = updatedSymbols_2;
+}
+
 function autoRefreshImage(formId, imgId, url, event) {
     // Show the loader before the AJAX request
     $('#loading-screen').show();
@@ -159,6 +321,7 @@ function onTabChange(event) {
     $(selectedTab).show(); // Show the selected tab
     currentTab = selectedTab; // Update current tab
     updateSavedDataDropdown(); // Update the saved data dropdown for the current tab
+    setDefaultDateTime()
 }
 
 setInterval(function() {
