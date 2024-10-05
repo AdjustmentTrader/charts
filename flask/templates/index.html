@@ -42,17 +42,18 @@
             <form id="dataForm1" method="POST">
                 <fieldset>
                     <legend>Straddle Price</legend>
+                    
                     <label for="symbol_nf">Symbol 1:</label>
-                    <input type="text" id="symbol_nf" name="symbol_nf" placeholder="NIFTY-05SEP24">
+                    <input type="text" id="symbol_nf" name="symbol_nf" value="NIFTY-05SEP24" placeholder="NIFTY-05SEP24">
                     
                     <label for="symbol_sx">Symbol 2:</label>
-                    <input type="text" id="symbol_sx" name="symbol_sx" placeholder="SENSEX-06SEP24">
+                    <input type="text" id="symbol_sx" name="symbol_sx" value="SENSEX-06SEP24" placeholder="SENSEX-06SEP24">
                     
                     <label for="start_date">Start Date:</label>
-                    <input type="date" id="start_date" name="start_date" required>
+                    <input type="datetime-local" id="start_date" name="start_date" required>
                     
                     <label for="end_date">End Date: should be next day of start_date</label>
-                    <input type="date" id="end_date" name="end_date" required>
+                    <input type="datetime-local" id="end_date" name="end_date" required>
                     
                     <label for="resample_freq">Resample Frequency:</label>
                     <input type="text" id="resample_freq" name="resample_freq" value="15T" placeholder="15T">
@@ -88,9 +89,20 @@
                     <!-- First Set of Fields: DoubleCalendar -->
                     <fieldset>
                         <legend>DoubleCalendar</legend>
-                        
+                        <br>
+                        <label for="dropdown">Reference Expiry Dates for next two months::</label>
+                        <select id="dropdown" onchange="onSelectionChange()">
+                            <option value="" disabled selected>Select an option</option>
+                            <option value="BANKNIFTY">BANKNIFTY</option>
+                            <option value="NIFTY">NIFTY</option>
+                        </select>
+                    
+                        <div id="dateList" style="display: none;">
+                            <ul id="dates"></ul>
+                        </div>
+                        <br><br><br>
                         <label for="symbols1">Symbols: CE BUY WEEKLY - PE BUY WEEKLY - CE SELL NEXT - PE SELL NEXT</label>
-                        <input type="text" id="symbols1" name="symbols1" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
+                        <input type="text" id="symbols1" name="symbols1" value="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
                         
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                             <label for="q1_1" style="margin: 0; white-space: nowrap;">Q1:</label>
@@ -125,7 +137,7 @@
                         <legend>IronButterfly</legend>
                         
                         <label for="symbols2">Symbols: CE BUY - CE SELL - PE SELL - PE BUY</label>
-                        <input type="text" id="symbols2" name="symbols2" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
+                        <input type="text" id="symbols2" name="symbols2" value="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
                         
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
                             <label for="q1_2" style="margin: 0; white-space: nowrap;">Q1:</label>
@@ -155,10 +167,10 @@
                         
                         
                         <label for="start_date1">Start Date:</label>
-                        <input type="date" id="start_date1" name="start_date1" required>
-                        
+                        <input type="datetime-local" id="start_date1" name="start_date1" required>
+
                         <label for="end_date1">End Date: should be next day of start_date</label>
-                        <input type="date" id="end_date1" name="end_date1" required>
+                        <input type="datetime-local" id="end_date1" name="end_date1" required>
                         
                         <label for="resample_freq1">Resample Frequency:</label>
                         <input type="text" id="resample_freq1" name="resample_freq1" value="15T">
@@ -235,7 +247,7 @@
                         <legend>DoubleCalendar</legend>
                         
                         <label for="symbols1">Symbols: CE BUY WEEKLY - PE BUY WEEKLY - CE SELL NEXT - PE SELL NEXT</label>
-                        <input type="text" id="symbols1" name="symbols1" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
+                        <input type="text" id="symbols1" name="symbols1" value="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
                         
                         <label for="q1_1">Q1:</label>
                         <input type="number" id="q1_1" name="q1_1" value="2" required>
@@ -250,10 +262,10 @@
                         <input type="number" id="q4_1" name="q4_1" value="2" required>
                         
                         <label for="start_date1">Start Date:</label>
-                        <input type="date" id="start_date1" name="start_date1" required>
+                        <input type="datetime-local" id="start_date1" name="start_date1" required>
                         
                         <label for="end_date1">End Date: should be next day of start_date</label>
-                        <input type="date" id="end_date1" name="end_date1" required>
+                        <input type="datetime-local" id="end_date1" name="end_date1" required>
                         
                         <label for="resample_freq1">Resample Frequency:</label>
                         <input type="text" id="resample_freq1" name="resample_freq1" value="15T">
@@ -280,7 +292,7 @@
                         <legend>IronButterfly</legend>
                         
                         <label for="symbols2">Symbols: CE BUY - CE SELL - PE SELL - PE BUY</label>
-                        <input type="text" id="symbols2" name="symbols2" placeholder="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
+                        <input type="text" id="symbols2" name="symbols2" value="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
                         
                         <label for="q1_2">Q1:</label>
                         <input type="number" id="q1_2" name="q1_2" value="1" required>
@@ -295,10 +307,10 @@
                         <input type="number" id="q4_2" name="q4_2" value="1" required>
                         
                         <label for="start_date2">Start Date:</label>
-                        <input type="date" id="start_date2" name="start_date2" required>
+                        <input type="datetime-local" id="start_date2" name="start_date2" required>
                         
                         <label for="end_date2">End Date: should be next day of start_date</label>
-                        <input type="date" id="end_date2" name="end_date2" required>
+                        <input type="datetime-local" id="end_date2" name="end_date2" required>
                         
                         <label for="resample_freq2">Resample Frequency:</label>
                         <input type="text" id="resample_freq2" name="resample_freq2" value="15T">
@@ -326,7 +338,7 @@
                         <legend>SpreadChart</legend>
                         
                         <label for="symbols2">Symbols:  LONG - SHORT </label>
-                        <input type="text" id="symbols2" name="symbols2" placeholder="BANKNIFTY-51800C-18SEP24:BANKNIFTY-51900C-18SEP24" required>
+                        <input type="text" id="symbols2" name="symbols2" value="BANKNIFTY-51800C-18SEP24:BANKNIFTY-51900C-18SEP24" required>
                         
                         <label for="q1_2">Q1: LONG QTY</label>
                         <input type="number" id="q1_2" name="q1_2" value="1" required>
@@ -335,10 +347,10 @@
                         <input type="number" id="q2_2" name="q2_2" value="1" required>
                         
                         <label for="start_date2">Start Date:</label>
-                        <input type="date" id="start_date2" name="start_date2" required>
+                        <input type="datetime-local" id="start_date2" name="start_date2" required>
                         
                         <label for="end_date2">End Date: should be next day of start_date</label>
-                        <input type="date" id="end_date2" name="end_date2" required>
+                        <input type="datetime-local" id="end_date2" name="end_date2" required>
                         
                         <label for="resample_freq2">Resample Frequency:</label>
                         <input type="text" id="resample_freq2" name="resample_freq2" value="15T">
