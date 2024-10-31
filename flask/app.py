@@ -64,7 +64,7 @@ def logout():
 
 # Define the cookies and headers
 cookies = {
-    'PHPSESSID': 'du7u85s8imhpka97hdvn789onh',
+    'PHPSESSID': '4f8835ed8m26g0pslpreombh35',
     '_ga': 'GA1.1.2100889719.1706939697',
     '_ga_LB470LF5SH': 'GS1.1.1725029890.344.1.1725029905.0.0.0',
 }
@@ -76,7 +76,7 @@ headers = {
 
 
 user = 'saravanan46'
-sid = 'du7u85s8imhpka97hdvn789onh'
+sid = '4f8835ed8m26g0pslpreombh35'
 
 def fetch_data(url):
     try:
