@@ -8,7 +8,6 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -34,7 +33,12 @@
                 <option value="tab4">DoubleCalendar</option>
                 <option value="tab5">IronButterfly</option>
                 <option value="tab6">SpreadChart</option>
-            </select>
+            </select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <label for="username" style="font-size: 14px; display: inline-block; width: 100px;">Username:</label>
+            <input type="text" id="username" value="saravanan46" name="username" style="width: 150px; padding: 8px; margin-right: 20px; border: 1px solid #ccc; border-radius: 4px; display: inline-block;">
+            <!-- Password Field -->
+            <label for="password" style="font-size: 14px; display: inline-block; width: 100px;">Password:</label>
+            <input type="password" id="password" value="du7u85s8imhpka97hdvn789onh" name="password" style="width: 150px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; display: inline-block;">
         </div>
 
         <!-- Tab 1 -->
@@ -89,18 +93,6 @@
                     <!-- First Set of Fields: DoubleCalendar -->
                     <fieldset>
                         <legend>DoubleCalendar</legend>
-                        <br>
-                        <label for="dropdown">Reference Expiry Dates for next two months::</label>
-                        <select id="dropdown" onchange="onSelectionChange()">
-                            <option value="" disabled selected>Select an option</option>
-                            <option value="BANKNIFTY">BANKNIFTY</option>
-                            <option value="NIFTY">NIFTY</option>
-                        </select>
-                    
-                        <div id="dateList" style="display: none;">
-                            <ul id="dates"></ul>
-                        </div>
-                        <br><br><br>
                         <label for="symbols1">Symbols: CE BUY WEEKLY - PE BUY WEEKLY - CE SELL NEXT - PE SELL NEXT</label>
                         <input type="text" id="symbols1" name="symbols1" value="NIFTY-25250C-05SEP24:NIFTY-25250P-05SEP24:NIFTY-25300C-12SEP24:NIFTY-25300P-12SEP24" required>
                         
