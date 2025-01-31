@@ -62,9 +62,12 @@ def logout():
     flash('You have been logged out.')
     return redirect(url_for('login'))
 
+user = 'saravanan46'
+sid = 'bvrdbrgabfncb3k333e7i5v3br'
+
 # Define the cookies and headers
 cookies = {
-    'PHPSESSID': '4f8835ed8m26g0pslpreombh35',
+    'PHPSESSID': sid,
     '_ga': 'GA1.1.2100889719.1706939697',
     '_ga_LB470LF5SH': 'GS1.1.1725029890.344.1.1725029905.0.0.0',
 }
@@ -75,8 +78,7 @@ headers = {
 }
 
 
-user = 'saravanan46'
-sid = 'e6ldqdbr0oc8t0teekcf56tk9m'
+
 
 def fetch_data(url):
     try:
@@ -341,6 +343,9 @@ def plot_data_doublcal(df_merged, symbol_nf, start_date, end_date):
 @app.route('/straddle', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
+        print("came1111")
+        user = request.args.get('username')
+        sid = request.args.get('password')
         symbol_nf = request.form.get('symbol_nf')
         symbol_sx = request.form.get('symbol_sx')
         start_date = request.form.get('start_date')
@@ -366,6 +371,7 @@ def index():
         #     is_today, is_in_time_range = True, True
         # Construct URLs with conditional latestData parameter
         #if is_today and is_in_time_range:
+        print("came")
         nifty_url_latestData = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
         sensex_url_latestData = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
         #else:
@@ -374,9 +380,13 @@ def index():
 
         # Fetch data from URLs
         data_nf = fetch_data(nifty_url) + fetch_data(nifty_url_latestData)
+        print(nifty_url)
+        print(sensex_url)
+        print(data_nf)
         data_sx = fetch_data(sensex_url) + fetch_data(sensex_url_latestData)
         data_future = fetch_data(get_symbol_url(symbol_nf, symbol_sx))
-
+        print("came222")
+        print(data_sx)
         if data_nf and data_sx and data_future:
             # Parse and process data
             df_nf = parse_data(data_nf)
@@ -421,6 +431,8 @@ def check_difference_increase(row_index, df):
 @app.route('/cal', methods=['GET', 'POST'])
 def index_cal():
     if request.method == 'POST':
+        user = request.args.get('username')
+        sid = request.args.get('password')
         symbols1 = request.form.get('symbols1')
         q1_1 = request.form.get('q1_1')
         q2_1 = request.form.get('q2_1')
@@ -478,6 +490,8 @@ def index_cal():
 def index_ironfly():
     if request.method == 'POST':
         ##second input
+        user = request.args.get('username')
+        sid = request.args.get('password')
         symbols2 = request.form.get('symbols2')
         q1_2 = request.form.get('q1_2')
         q2_2 = request.form.get('q2_2')
@@ -515,6 +529,8 @@ def index_ironfly():
 def index_ironflyPrice():
     if request.method == 'POST':
         ##second input
+        user = request.args.get('username')
+        sid = request.args.get('password')
         symbols2 = request.form.get('symbols2')
         q1_2 = request.form.get('q1_2')
         q2_2 = request.form.get('q2_2')
@@ -587,6 +603,8 @@ def index_ironflyPrice():
 @app.route('/doubleCal', methods=['GET', 'POST'])
 def index_doubleCal():
     if request.method == 'POST':
+        user = request.args.get('username')
+        sid = request.args.get('password')
         symbols1 = request.form.get('symbols1')
         q1_1 = request.form.get('q1_1')
         q2_1 = request.form.get('q2_1')
@@ -624,6 +642,8 @@ def index_doubleCal():
 @app.route('/doubleCalPrice', methods=['GET', 'POST'])
 def index_doubleCalPrice():
     if request.method == 'POST':
+        user = request.args.get('username')
+        sid = request.args.get('password')
         symbols1 = request.form.get('symbols1')
         q1_1 = request.form.get('q1_1')
         q2_1 = request.form.get('q2_1')
@@ -693,6 +713,8 @@ def index_doubleCalPrice():
 @app.route('/spreadchart', methods=['GET', 'POST'])
 def index_spreadchart():
     if request.method == 'POST':
+        user = request.args.get('username')
+        sid = request.args.get('password')
         symbols2 = request.form.get('symbols2')
         q1_2 = request.form.get('q1_2')
         q2_2 = request.form.get('q2_2')
