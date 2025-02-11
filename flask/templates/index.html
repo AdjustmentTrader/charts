@@ -33,12 +33,13 @@
                 <option value="tab4">DoubleCalendar</option>
                 <option value="tab5">IronButterfly</option>
                 <option value="tab6">SpreadChart</option>
+                <option value="tab7">Strike Straddle</option>
             </select>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <label for="username" style="font-size: 14px; display: inline-block; width: 100px;">Username:</label>
             <input type="text" id="username" value="saravanan46" name="username" style="width: 150px; padding: 8px; margin-right: 20px; border: 1px solid #ccc; border-radius: 4px; display: inline-block;">
             <!-- Password Field -->
             <label for="password" style="font-size: 14px; display: inline-block; width: 100px;">Password:</label>
-            <input type="password" id="password" value="du7u85s8imhpka97hdvn789onh" name="password" style="width: 150px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; display: inline-block;">
+            <input type="password" id="password" value="bvrdbrgabfncb3k333e7i5v3br" name="password" style="width: 150px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; display: inline-block;">
         </div>
 
         <!-- Tab 1 -->
@@ -48,10 +49,10 @@
                     <legend>Straddle Price</legend>
                     
                     <label for="symbol_nf">Symbol 1:</label>
-                    <input type="text" id="symbol_nf" name="symbol_nf" value="NIFTY-05SEP24" placeholder="NIFTY-05SEP24">
+                    <input type="text" id="symbol_nf" name="symbol_nf" value="NIFTY-12SEP24" placeholder="NIFTY-12SEP24">
                     
                     <label for="symbol_sx">Symbol 2:</label>
-                    <input type="text" id="symbol_sx" name="symbol_sx" value="SENSEX-06SEP24" placeholder="SENSEX-06SEP24">
+                    <input type="text" id="symbol_sx" name="symbol_sx" value="NIFTY-19SEP24" placeholder="NIFTY-19SEP24">
                     
                     <label for="start_date">Start Date:</label>
                     <input type="datetime-local" id="start_date" name="start_date" required>
@@ -83,6 +84,43 @@
             <div class="graph-container">
                 <div id="loading-screen" class="loader" style="display:none;">Loading...</div>
                 <img id="graph-img-tab1" class="graph-img">
+            </div>   
+        </div>
+
+        <div id="tab7" class="tab-content">
+            <form id="dataForm7" method="POST">
+                <fieldset>
+                    <legend>Strike Straddle Price</legend>
+                    
+                    <label for="symbol_nf">Symbol 1:</label>
+                    <input type="text" id="symbol_nf" name="symbol_nf" value="NIFTY-23600C-13FEB25:NIFTY-23600P-13FEB25" placeholder="NIFTY-23600C-13FEB25:NIFTY-23600P-13FEB25">
+                    
+                    <label for="symbol_sx">Symbol 2:</label>
+                    <input type="text" id="symbol_sx" name="symbol_sx" value="SENSEX-78500C-11FEB25:SENSEX-78500P-11FEB25" placeholder="SENSEX-78500C-11FEB25:SENSEX-78500P-11FEB25">
+                    
+                    <label for="start_date">Start Date:</label>
+                    <input type="datetime-local" id="start_date" name="start_date" required>
+                    
+                    <label for="end_date">End Date: should be next day of start_date</label>
+                    <input type="datetime-local" id="end_date" name="end_date" required>
+                    
+                    <label for="resample_freq">Resample Frequency:</label>
+                    <input type="text" id="resample_freq" name="resample_freq" value="15T" placeholder="15T">
+
+    
+
+                    <input type="submit" value="Fetch Data">
+                </fieldset>
+            </form>
+            <div class="save-load-buttons">
+                <select class="saved-data-dropdown"></select>
+                <button onclick="saveFormData('#dataForm7')">Save</button>
+                <button onclick="loadFormData('#dataForm7')">Load</button>
+                <button onclick="deleteFormData()">Delete</button>
+            </div>
+            <div class="graph-container">
+                <div id="loading-screen" class="loader" style="display:none;">Loading...</div>
+                <img id="graph-img-tab7" class="graph-img">
             </div>   
         </div>
 
