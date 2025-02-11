@@ -63,7 +63,7 @@ def logout():
     return redirect(url_for('login'))
 
 user = 'saravanan46'
-sid = 'e6ldqdbr0oc8t0teekcf56tk9m'
+sid = 'bvrdbrgabfncb3k333e7i5v3br'
 
 # Define the cookies and headers
 cookies = {
@@ -372,6 +372,8 @@ def index():
         # Construct URLs with conditional latestData parameter
         #if is_today and is_in_time_range:
         print("came")
+        #https://www.icharts.in/opt/hcharts/stx8req/php/getdataForOptionStrategy_cndl.php?mode=INTRA&symbol=NIFTY-23600C-13FEB25:NIFTY-23600P-13FEB25&timeframe=1min&u=saravanan46&sid=bvrdbrgabfncb3k333e7i5v3br&q1=1&q2=1
+        #https://www.icharts.in/opt/hcharts/stx8req/php/getdataForOptionStrategy_cndl.php?mode=INTRA&symbol=NIFTY-23500C-13FEB25:NIFTY-23500P-13FEB25&timeframe=1min&u=saravanan46&sid=bvrdbrgabfncb3k333e7i5v3br&q1=1&q2=1
         nifty_url_latestData = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
         sensex_url_latestData = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
         #else:
@@ -380,13 +382,8 @@ def index():
 
         # Fetch data from URLs
         data_nf = fetch_data(nifty_url) + fetch_data(nifty_url_latestData)
-        print(nifty_url)
-        print(sensex_url)
-        print(data_nf)
         data_sx = fetch_data(sensex_url) + fetch_data(sensex_url_latestData)
         data_future = fetch_data(get_symbol_url(symbol_nf, symbol_sx))
-        print("came222")
-        print(data_sx)
         if data_nf and data_sx and data_future:
             # Parse and process data
             df_nf = parse_data(data_nf)
@@ -404,9 +401,93 @@ def index():
             df_merged = pd.merge(df_merged, df_future_downsampled, on='DateTime')
             df_merged.rename(columns={'Value': 'Value_FUTURE'}, inplace=True)
             df_merged = df_merged[(df_merged['DateTime'] >= start_date) & (df_merged['DateTime'] <= end_date)]
+            # Add new calculated columns
             df_merged['Difference'] = df_merged['Value_NF'] - df_merged['Value_SX']
             df_merged['Difference_Increasing'] = df_merged.index.map(lambda idx: check_difference_increase(idx, df_merged))
 
+            img = plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date)
+            
+            try:
+                last_value = df_merged['Difference_Increasing'].iloc[-1]
+                response = Response(img, mimetype='image/png')
+                response.headers['X-Last-Value'] = str(last_value)
+            except Exception as err:
+                print("Error generating response:", err)
+                return "DataFrame is empty or an error occurred.", 500
+
+            return response
+        else:
+            return "Error fetching data.", 500
+
+    return render_template('index.html')
+
+
+@app.route('/straddleCompare', methods=['GET', 'POST'])
+def index_straddleCompare():
+    if request.method == 'POST':
+        print("came1111")
+        user = request.args.get('username')
+        sid = request.args.get('password')
+        symbol_nf = request.form.get('symbol_nf')
+        symbol_sx = request.form.get('symbol_sx')
+        start_date = request.form.get('start_date')
+        end_date = request.form.get('end_date')
+        resample_freq = request.form.get('resample_freq', '15T')  # Default to '15T' if not provided
+
+        # Check if start_date is today
+        # try:
+        #     # Parse the ISO 8601 date-time string
+        #     parsed_datetime = datetime.strptime(start_date, '%Y-%m-%dT%H:%M')
+        #     # Get today's date
+        #     today = datetime.now().date()
+        #     # Check if the parsed date is today's date
+        #     is_today = parsed_datetime.date() == today
+        #     # Get the current time
+        #     current_time = datetime.now().time()
+        #     # Check if the parsed time is within the range 09:15 to 23:55
+        #     is_in_time_range = dt_time(9, 15) <= current_time <= dt_time(23, 55)
+        #     print("Is today:", is_today)
+        #     print("Is in time range:", is_in_time_range)
+        # except Exception as err:
+        #     print("Exception checking date/time:", err)
+        #     is_today, is_in_time_range = True, True
+        # Construct URLs with conditional latestData parameter
+        #if is_today and is_in_time_range:
+        print("came-straddleCompare")
+        nifty_url_latestData = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForOptionStrategy_cndl.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&u={user}&sid={sid}&q1=1&q2=1"
+        sensex_url_latestData = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForOptionStrategy_cndl.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&u={user}&sid={sid}&q1=1&q2=1"
+        ###nifty_url_latestData = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
+        ###sensex_url_latestData = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}&latestData=1"
+        #else:
+        #nifty_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_nf}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}"
+        #sensex_url = f"https://www.icharts.in/opt/hcharts/stx8req/php/getdataForStraddleChartsATMFP_v6.php?mode=INTRA&symbol={symbol_sx}&timeframe=1min&rdDataType=latest&u={user}&sid={sid}"
+
+        # Fetch data from URLs
+        data_nf =  fetch_data(nifty_url_latestData)
+        data_sx =  fetch_data(sensex_url_latestData)
+        data_future = fetch_data(get_symbol_url(symbol_nf, symbol_sx))
+        if data_nf and data_sx and data_future:
+            # Parse and process data
+            df_nf = parse_data(data_nf)
+            df_sx = parse_data(data_sx)
+            df_future = parse_data(data_future)
+
+            df_nf_downsampled = downsample_data(df_nf, resample_freq)
+            df_sx_downsampled = downsample_data(df_sx, resample_freq)
+            df_future_downsampled = downsample_data(df_future, resample_freq)
+
+            # Merge the data on 'DateTime' column
+            df_merged = pd.merge(df_nf_downsampled, df_sx_downsampled, on='DateTime', suffixes=('_NF', '_SX'))
+            pd.set_option('display.max_rows', None)
+            pd.set_option('display.max_columns', None)
+            df_merged = pd.merge(df_merged, df_future_downsampled, on='DateTime')
+            df_merged.rename(columns={'Value': 'Value_FUTURE'}, inplace=True)
+            df_merged = df_merged[(df_merged['DateTime'] >= start_date) & (df_merged['DateTime'] <= end_date)]
+            # Add new calculated columns
+            #df_merged['Value_NF'] = (df_merged['Value_NF'] * 300).astype(int)
+            #df_merged['Value_SX'] = (df_merged['Value_SX'] * 100).astype(int)
+            df_merged['Difference'] = (df_merged['Value_NF'] * 3 )- df_merged['Value_SX']
+            df_merged['Difference_Increasing'] = df_merged.index.map(lambda idx: check_difference_increase(idx, df_merged))
             img = plot_data(df_merged, symbol_nf, symbol_sx, start_date, end_date)
             
             try:
